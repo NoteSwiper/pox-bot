@@ -12,10 +12,15 @@ import logging
 import logging.handlers
 import re
 import base64
+import dotenv
+dotenv.load_dotenv()
 
 from voxpopuli import Voice
 
 import data
+
+if not os.path.exists('./logs'):
+    os.makedirs('./logs',exist_ok=True)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

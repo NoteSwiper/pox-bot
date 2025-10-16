@@ -840,6 +840,18 @@ files = [
 ]
 
 [[package]]
+name = "future"
+version = "1.0.0"
+description = "Clean single-source support for Python 3 and 2"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+groups = ["main"]
+files = [
+    {file = "future-1.0.0-py3-none-any.whl", hash = "sha256:929292d34f5872e70396626ef385ec22355a1fae8ad29e1a734c3e43f9fbc216"},
+    {file = "future-1.0.0.tar.gz", hash = "sha256:bd2968309307861edae1458a4f8a4f3598c03be43b97521076aebf5d94c07b05"},
+]
+
+[[package]]
 name = "gtts"
 version = "2.5.4"
 description = "gTTS (Google Text-to-Speech), a Python library and CLI tool to interface with Google Translate text-to-speech API"
@@ -888,6 +900,33 @@ files = [
 
 [package.extras]
 all = ["flake8 (>=7.1.1)", "mypy (>=1.11.2)", "pytest (>=8.3.2)", "ruff (>=0.6.2)"]
+
+[[package]]
+name = "inflection"
+version = "0.5.1"
+description = "A port of Ruby on Rails inflector to Python"
+optional = false
+python-versions = ">=3.5"
+groups = ["main"]
+files = [
+    {file = "inflection-0.5.1-py2.py3-none-any.whl", hash = "sha256:f38b2b640938a4f35ade69ac3d053042959b62a0f1076a5bbaa1b9526605a8a2"},
+    {file = "inflection-0.5.1.tar.gz", hash = "sha256:1a29730d366e996aaacffb2f1f1cb9593dc38e2ddd30c91250c6dde09ea9b417"},
+]
+
+[[package]]
+name = "json-config"
+version = "2.0.1"
+description = "A convenience utility for working with JSON config files."
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "json_config-2.0.1-py2.py3-none-any.whl", hash = "sha256:db006461ba2dc77bb63ee65f483da30f31b8ad8b4a2e724f6db2898c7456e679"},
+    {file = "json_config-2.0.1.tar.gz", hash = "sha256:2b71cfd942720054f2c3dfb0a2fd610241ddd1b61f1c28197f35841d920fdd1e"},
+]
+
+[package.dependencies]
+future = "*"
 
 [[package]]
 name = "kiwisolver"
@@ -1573,6 +1612,21 @@ http = ["flask (>=3,<4)"]
 train = ["cython (>=3,<4)", "jsonargparse[signatures] (>=4.27.7)", "librosa (<1)", "lightning (>=2,<3)", "onnx (>=1,<2)", "pathvalidate (>=3,<4)", "pysilero-vad (>=2.1,<3)", "tensorboard (>=2,<3)", "tensorboardX (>=2,<3)", "torch (>=2,<3)"]
 
 [[package]]
+name = "profanityfilter"
+version = "2.1.0"
+description = "A universal Python library for detecting and/or filtering profane words."
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "profanityfilter-2.1.0-py2.py3-none-any.whl", hash = "sha256:e1bc07012760fd74512a335abb93a36877831ed26abab78bfe31bebb68f8c844"},
+    {file = "profanityfilter-2.1.0.tar.gz", hash = "sha256:0ede04e92a9d7255faa52b53776518edc6586dda828aca677c74b5994dfdd9d8"},
+]
+
+[package.dependencies]
+inflection = "*"
+
+[[package]]
 name = "propcache"
 version = "0.4.1"
 description = "Accelerated property cache"
@@ -1784,6 +1838,21 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "python-dotenv"
+version = "1.1.1"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "python_dotenv-1.1.1-py3-none-any.whl", hash = "sha256:31f23644fe2602f88ff55e1f5c79ba497e01224ee7737937930c448e4d0e24dc"},
+    {file = "python_dotenv-1.1.1.tar.gz", hash = "sha256:a8a6399716257f45be6a007360200409fce5cda2661e3dec71d23dc15f6189ab"},
+]
+
+[package.extras]
+cli = ["click (>=5.0)"]
 
 [[package]]
 name = "pytz"
@@ -2084,4 +2153,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "680e3141b5f694bb5d28d2a53c0a5b89a0c1bc33dbefdd42cbc001d69309b6a7"
+content-hash = "c3f9a06afbbd4aff96c3018744cc85d7d54b73b580d848514639529e5686a718"

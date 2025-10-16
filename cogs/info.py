@@ -57,7 +57,7 @@ class Info(commands.Cog):
             'Commit Message': last_commit_message,
         }
         
-        e = discord.Embed(title="Current git information", url="https://github.com/NoteSwiper/dbotpy")
+        e = discord.Embed(title="Current git information", url="https://github.com/NoteSwiper/pox-bot")
         
         for item, value in temp1.items():
             e.add_field(name=item,value=value)

@@ -1,6 +1,9 @@
+import asyncio
 import atexit
 import datetime
 import os
+import random
+import re
 import subprocess
 from time import time
 import traceback
@@ -9,11 +12,16 @@ import discord
 from discord.ext import commands
 from edge_tts import VoicesManager, list_voices
 from gtts.lang import tts_langs
+from sympy import false
 import stuff
 import data
 import aiosqlite
+import profanityfilter
 from logger import logger
 
+pf = profanityfilter.ProfanityFilter()
+
+from data import null_interactions, null_messages
 class PoxBot(commands.AutoShardedBot):
     """
     Pox's discord bot
@@ -33,6 +41,7 @@ class PoxBot(commands.AutoShardedBot):
         self.failed_interactions = 0
         self.gtts_cache_langs = tts_langs()
         self.received_chunks = 0
+        self.already_said = False
     
     async def setup_hook(self):
         self.db_connection = await aiosqlite.connect("./leaderboard.db")
@@ -90,7 +99,32 @@ class PoxBot(commands.AutoShardedBot):
                     await self.process_commands(message)
                 else:
                     if not message.author.bot or message.author.system:
-                        await message.reply(prompt)
+                        if pf.is_profane(prompt):
+                            url = os.path.dirname(__file__)
+                            url2 = os.path.join(url,"images/nah.jpg")
+
+                            with open(url2, 'rb') as f:
+                                pic = discord.File(f,"nah.jpg")
+                            
+                            e = discord.Embed()
+                            e.set_image(url="attachment://nah.jpg")
+                            await message.reply(file=pic,embed=e)
+                            self.already_said = True
+                        else:
+                            for pattern, index in null_interactions.items():
+                                result = re.search(pattern, prompt)
+                                if result:
+                                    if index['type'] == "single":
+                                        inded = null_messages[index['index']]
+                                        if inded is not None:
+                                            await message.reply(inded)
+                                    elif index['type'] == "multi":
+                                        for indexindex, index2 in enumerate(index['index']):
+                                            await message.reply(index2)
+                                            if indexindex != len(index['index']) - 1:
+                                                await asyncio.sleep(random.uniform(1.0,2.5))
+                                    break
+                            #await message.reply(prompt)
         else:
             logger.error("Couldn't find 'bot.user'")
         

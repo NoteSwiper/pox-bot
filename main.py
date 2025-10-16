@@ -1,4 +1,5 @@
 import atexit
+import os
 import subprocess
 import uuid
 import time
@@ -8,6 +9,8 @@ from datetime import datetime, UTC
 from discord.ext import commands
 
 import stuff
+stuff.create_dir_if_not_exists("./logs")
+
 #import help_command
 from bot import PoxBot
 
@@ -15,8 +18,6 @@ from logger import logger
 
 handled_messages = 0
 current_guild = 0
-
-stuff.create_dir_if_not_exists("./logs")
 
 start_time = time.time()
 

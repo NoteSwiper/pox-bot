@@ -98,7 +98,7 @@ class Management(commands.Cog):
             if m.reference and m.reference.resolved:
                 is_replied = m.reference.resolved.author == self.bot.user
             
-            return is_bot or is_replied
+            return not ctx.message and (is_bot or is_replied)
             
         deleted_count = 0
         
@@ -111,128 +111,6 @@ class Management(commands.Cog):
                 
             await ctx.reply(f"Deleted {deleted_count} messages including the messages that replied to me.", delete_after=5, ephemeral=True)
             
-    @commands.hybrid_command(name="is_server_nsfw", description="Check if this server is NSFW")
-    async def check_if_server_is_nsfw(self, ctx: commands.Context):
-        reply = ""
-        if ctx.guild:
-            if ctx.guild.nsfw_level == discord.NSFWLevel.default:
-                reply = "Not specified"
-            elif ctx.guild.nsfw_level == discord.NSFWLevel.explicit:
-                reply = "Explicit"
-            elif ctx.guild.nsfw_level == discord.NSFWLevel.safe:
-                reply = "Safe"
-            elif ctx.guild.nsfw_level == discord.NSFWLevel.age_restricted:
-                reply = "Age restricted"
-            else:
-                reply = "Unknown"
-
-        else:
-            await ctx.reply("guild object not found 3:")
-            return
-        
-        await ctx.reply(f"this guild is `{reply}` rating! ;3")
-    
-    @commands.hybrid_command(name="get_server_info",description="Shows information for server")
-    async def check_server_info(self, ctx: commands.Context):
-        guild = ctx.guild
-        if guild and not guild.unavailable == True:
-            temp1 = {
-                'ID': guild.id,
-                'Description': guild.description if guild.description else "No description",
-                'Preffered Locale': guild.preferred_locale.language_code,
-                'Owner': guild.owner,
-                'Members': guild.member_count,
-                'Created on': guild.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                'Current Shard': guild.shard_id if guild.shard_id else "Unknown",
-            }
-            
-            e = discord.Embed(
-                title=f"Information for {guild.name}",
-                color=discord.Color.blue()
-            )
-            
-            for key,value in temp1.items():
-                e.add_field(name=key,value=value, inline=True)
-            
-            if guild.icon:
-                e.set_thumbnail(url=guild.icon.url)
-            
-            await ctx.send(embed=e)
-        else:
-            await ctx.send("It seems the guild unavailable.")
-    
-    @commands.hybrid_command(name="get_user_info", description="Checks user")
-    async def check_user_info(self, ctx: commands.Context, user: discord.Member):
-        try:
-            if user:
-                roles = [f"{role.name}" for role in user.roles]
-                temp1 = {
-                    'User ID': user.id,
-                    'Name': user.display_name,
-                    'Bot': "True" if user.bot else "False",
-                    'Created on': user.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                    'Highest role': f"{user.top_role.name}",
-                    'Status': user.raw_status,
-                    'Nitro since': user.premium_since.strftime("%Y-%m-%d %H:%M:%S") if user.premium_since else "Unknown",
-                    'Joined at': user.joined_at.strftime("%Y-%m-%d %H:%M:%S") if user.joined_at else "Unknown",
-                    'Roles': ", ".join(roles)
-                }
-
-                e = discord.Embed(title=f"Information for <@{user.id}>")
-
-                for key,value in temp1.items():
-                    e.add_field(
-                        name=key,
-                        value=value,
-                        inline=True
-                    )
-
-                if user.display_avatar:
-                    e.set_thumbnail(url=user.display_avatar.url)
-                
-                await ctx.send(embed=e)
-            else:
-                await ctx.send("User not found!")
-        except Exception as e:
-            await ctx.send(f"Error! {e} 3:")
-            logger.error(f"Error: {e}")
-    
-    @commands.hybrid_command(name="get_role_info", description="Checks role")
-    async def check_role_info(self, ctx: commands.Context, role: discord.Role):
-        try:
-            if role:
-                members = [f"{member.display_name}" for member in role.members]
-                temp1 = {
-                    'Role ID': role.id,
-                    'Role Name': role.name,
-                    'Role Color': role.color,
-                    'Created on': role.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                    'Managed Role?': "Yeah" if role.managed == True else ("Nah" if role.managed == False else "I dunno"),
-                    "Can be mentioned": "Yup but don't spam it please" if role.mentionable == True else ("Nope" if role.mentionable == False else "I dunno"),
-                    "It shown in member list?": "Ye" if role.hoist == True else ("Nuh uh" if role.hoist == False else "I dunno"),
-                    "Position": role.position or "IDK",
-                    "Members": ", ".join(members)
-                }
-
-                e = discord.Embed(title=f"Information for <@{role.id}>")
-
-                for key,value in temp1.items():
-                    e.add_field(
-                        name=key,
-                        value=value,
-                        inline=True
-                    )
-
-                if role.display_icon and isinstance(role.display_icon, discord.Asset):
-                    e.set_thumbnail(url=role.display_icon.url)
-                
-                await ctx.send(embed=e)
-            else:
-                await ctx.send("User not found!")
-        except Exception as e:
-            await ctx.send(f"Error! {e} 3:")
-            logger.error(f"Error: {e}")
-
     @commands.hybrid_command(name="send_dm",description="DMs to a member")
     @commands.has_permissions(manage_permissions=True,manage_messages=True)
     @app_commands.describe(member="Member to send")

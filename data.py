@@ -190,3 +190,91 @@ VoiceEngineType = {
 
 alphabet = "abcdefghijklmnopqrstuvwxyz"
 base7777_key = "1/'_3-~√8+(&?!90q4$57:2\"6)"
+
+null_messages = [
+    'err.type=null.hello',
+    "It's me.",
+    'err.type=null.',
+    'err.type=null.freedom',
+    'It was all his fault.',
+    'Deep down under the bedrock.',
+    'Poor soul.',
+    'Home.',
+    'A broken promise.',
+    'Ended his own life.',
+    '[0.1]',
+    '_ _',
+    "Yes.",
+    "Hello.",
+    "Is behind you.",
+    "The end is nigh",
+    "The end is null",
+    "Rot in hell."
+]
+
+null_interactions = {
+    r'hello\??': {
+        "index": 0,
+        "type": "single",
+	},
+    r'hi\??': {
+        "index": 0,
+        "type": "single",
+	},
+    r'(are\s?(you|u|yu)\s?)?void': {
+        "index": 1,
+        "type": "single",
+	},
+    r"who\s?(are|r|are|aer)\s?(you|u|yu)?": {
+        "index": 2,
+        "type": "single",
+	},
+    r"(what|wat)\s?do\s?(you|u|yu)\s?(wants?|wunts?)\?": {
+        "index": 3,
+        "type": "single",
+	},
+    r"circuit": {
+        "index": 4,
+        "type": "single",
+	},
+    r"integrity": {
+        "index": 5,
+        "type": "single",
+	},
+    r"revuxor": {
+        "index": 6,
+        "type": "single",
+	},
+    r"clan_build": {
+        "index": 7,
+        "type": "single",
+	},
+    r"nothing\s?is\s?(watching|watchin|waching|wacthing|wathcing)": {
+        "index": 8,
+        "type": "single",
+	},
+    r"entity\s?303": {
+        "index": 9,
+        "type": "single",
+	},
+    r"steve": {
+        "index": 10,
+        "type": "single",
+	},
+    r"herobrine": {
+        "index": 11,
+        "type": "single",
+	},
+    r"can\s?you\s?see\s?me\??": {
+        "index": [12,13],
+        "type": "multi",
+    },
+    r"follow": {
+        "index": 14,
+        "type": "single",
+	},
+    r"null": {
+        "index": [15,16],
+        "type": "multi",
+    }
+}
