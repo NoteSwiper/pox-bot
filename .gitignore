@@ -230,3 +230,5 @@ pip-selfcheck.json
 voices/
 voices
 voices/*
+*.db*
+*.db-journal
