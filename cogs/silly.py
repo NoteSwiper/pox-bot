@@ -24,26 +24,26 @@ class Silly(commands.Cog):
     
     @app_commands.command(name="pox",description="Say him 'p0x38 is retroslop >:3'")
     async def pox_message(self, ctx: discord.Interaction):
-        await ctx.response.send_message("p0x38 is retroslop >:3")
+        await ctx.response.send_message("p0x38 is retroslop.")
 
     @app_commands.command(name="bot_timezone", description="Shows time in bot's time")
     async def get_bot_timestamp(self, ctx: discord.Interaction):
         timec = datetime.now(pytz.timezone("Asia/Tokyo"))
         
-        await ctx.response.send_message(f"I'm on {datetime.strftime(timec, '%Y-%m-%d %H:%M:%S%z')} :3")
+        await ctx.response.send_message(f"I'm on {datetime.strftime(timec, '%Y-%m-%d %H:%M:%S%z')}.")
     
     @commands.hybrid_command(name="generate_number",description="Generates random value between min and max")
     @app_commands.describe(min="Minimum integer")
     @app_commands.describe(max="Maximum integer")
     async def random_number(self, ctx: commands.Context,min = 0, max = 1):
-        await ctx.send(f"Result: {random.uniform(min,max)}")
+        await ctx.send(f"Result is **{random.uniform(min,max)}**.")
     
     @commands.hybrid_command(name="8ball",description="8ball like that; credit by galaxy_fl3x")
     @app_commands.describe(ke="Text to check if it is")
     async def eight_ball(self, ctx: commands.Context,*,ke):
         choice = random.choice(data.tyc)
         
-        await ctx.send(f"{ke}, result: {choice}")
+        await ctx.send(f"{ke}\nYou're {choice}.")
     
     @commands.hybrid_command(name="say_meow",description="Make me say miaw :3")
     @app_commands.describe(put_face="Enables extra face such as :3")
@@ -56,58 +56,7 @@ class Silly(commands.Cog):
             if add_face:
                 arrays[index] = arrays[index]+" "+random.choice(data.faces)
         
-        await ctx.send(f"{random.choice(arrays)}")
-    
-    @commands.hybrid_command(name="pox_leaderboard",description="Shows leaderboard in server who said pox for many times")
-    async def poxword_leaderboard(self, ctx: commands.Context):
-        if self.bot.db_connection:
-            async with self.bot.db_connection.execute("SELECT user_id, pox_count FROM leaderboard ORDER BY pox_count DESC LIMIT 32") as cursor:
-                lbdata = await cursor.fetchall()
-            
-            desc = ""
-            
-            if len(lbdata) == 0:
-                desc = "No one has said \"pox\" yet 3:"
-            else:
-                for i, (id,count) in enumerate(lbdata,1):
-                    desc += f"{i}. <@{id}>: {int(count)} times!\n"
-            
-            e = discord.Embed(
-                title="**Pox Leaderboard**",
-                description=desc,
-                color=0xFFA500,
-            )
-            e.set_footer(text="The leaderboard database were stored in host computer.")
-            
-            await ctx.reply(embed=e)
-        else:
-            await ctx.reply("sowwy bot has no connection with Database... 3:")
-    
-    
-    @commands.hybrid_command(name="word_leaderboard",description="Shows leaderboard in server who has yapping all times")
-    async def word_leaderboard(self, ctx: commands.Context):
-        if self.bot.db_connection:
-            async with self.bot.db_connection.execute("SELECT user_id, amount FROM words ORDER BY amount DESC LIMIT 32") as cursor:
-                lbdata = await cursor.fetchall()
-            
-            desc = ""
-            
-            if len(lbdata) == 0:
-                desc = "No one has said \"any words\" yet 3:"
-            else:
-                for i, (id,count) in enumerate(lbdata,1):
-                    desc += f"{i}. <@{id}>: {int(count)} times!\n"
-            
-            e = discord.Embed(
-                title="**Word Leaderboard**",
-                description=desc,
-                color=0xFFA500,
-            )
-            e.set_footer(text="The leaderboard database were stored in host computer.")
-            
-            await ctx.reply(embed=e)
-        else:
-            await ctx.reply("sowwy bot has no connection with Database... 3:")
+        await ctx.send(f"{random.choice(arrays)}.")
     
     @commands.hybrid_command(name="is_owner_active",description="Check if pox is active")
     async def is_pox_active(self, ctx: commands.Context):
@@ -119,11 +68,11 @@ class Silly(commands.Cog):
         status = ""
         
         if isInSchool:
-            status = "Pox is in school! :3"
+            status = "Pox is in school."
         elif isSleeping:
-            status = "Pox is sleeping! :3"
+            status = "Pox is sleeping."
         else:
-            status = "Pox is sometimes active! :3"
+            status = "Pox is sometime active."
         
         await ctx.send(f"{status}\nMay the result varies by the time, cuz it is very advanced to do... also this is not accurate.")
     
@@ -136,21 +85,21 @@ class Silly(commands.Cog):
             with open(url2, 'rb') as f:
                 pic = discord.File(f)
             
-            await ctx.send("THINK FAST, CHUCKLE NUTS!",file=pic)
+            await ctx.send("THINK FAST, CHUCKLE NUTS.",file=pic)
         except Exception as e:
-            await ctx.send(f"Error! {e} 3:")
+            await ctx.send(f"err.type=null.error. {e}")
     
     @commands.hybrid_command(name="freaky_response",description="like a emoji... ahn 🥵")
     @app_commands.describe(by="A member to being freaky to me")
     async def be_freaky(self, ctx: commands.Context, by: discord.Member|None = None):
         titl = stuff.format_extra(random.choice(data.very_freaky)).format(f"<@{by.id if by else ctx.author.id}>")
-        desc = "...EEWWWWWW!!!!!1!1 3:"
+        desc = "ew."
         
         await ctx.reply(f"{titl}\n{desc}")
     
     @commands.hybrid_command(name="is_owner_school_date",description="Check if owner of the bot is in school")
     async def check_if_pox_is_school_day(self,ctx):
-        await ctx.send(f"Pox is {"in school day 3:" if stuff.is_weekday(datetime.now(pytz.timezone("Asia/Tokyo"))) else "not in school day! >:D"}")
+        await ctx.send(f"Pox is {"in school day." if stuff.is_weekday(datetime.now(pytz.timezone("Asia/Tokyo"))) else "not in school day."}")
     
     @commands.hybrid_command(name="generate_emoticon",description="Sends random emoticon")
     async def send_emoticon(self,ctx):
@@ -159,20 +108,20 @@ class Silly(commands.Cog):
     @commands.hybrid_command(name="job_application",description="yeah")
     async def a_job_message(self, ctx):
         try:
-            await ctx.send("Today, I'll be talking about one of humanity's biggest fears")
+            await ctx.send("Today, I'll be talking about one of humanity's biggest fears.")
             await asyncio.sleep(2)
-            await ctx.send("# A J*B")
+            await ctx.send("# A J*B.")
         except Exception as e:
             logger.error(e)
     
     @commands.hybrid_command(name="boop_member",description="boops someone")
     @app_commands.describe(user="Member to boop")
     async def boop_member(self, ctx: commands.Context, user: discord.Member):
-        await ctx.send(f"<@{user.id}> boop :3")
+        await ctx.send(f"<@{user.id}> boop.")
     
     @commands.hybrid_command(name="idek", description="idek.")
     async def idek(self, ctx):
-        await ctx.reply(f"idek")
+        await ctx.reply(f"idek.")
     
     @commands.hybrid_command(name="t0001",description="...")
     @app_commands.describe(id="...")
@@ -197,11 +146,11 @@ class Silly(commands.Cog):
             # lease hate me please hate me please hate me
             
             if ctx.author.id == 1321324137850994758:
-                desc = "pox is dumb and idiot"
+                desc = "pox is dumb and idiot."
             svp = random.choice(data.err_ssoa)
         else:
             svp = data.msg_ssoa[id]
-            desc = "Don't take my word. it's not directed at you"
+            desc = "Don't take my word. it's not directed at you."
         embed = discord.Embed(title=svp,description=desc)
         
         await ctx.reply(embed=embed)
@@ -214,7 +163,7 @@ class Silly(commands.Cog):
         text2 = stuff.get_markov_dataset("2")
         
         if not text2:
-            await ctx.reply("Unexcepted error occured! 3:")
+            await ctx.reply("Unexcepted error occured.")
             return
         
         text = "\n".join(text2)
@@ -245,7 +194,7 @@ class Silly(commands.Cog):
         text2 = stuff.get_markov_dataset("1")
         
         if not text2:
-            await ctx.reply("Unexcepted error occured! 3:")
+            await ctx.reply("Unexcepted error occured.")
             return
         
         text = "\n".join(text2)

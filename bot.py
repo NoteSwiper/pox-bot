@@ -1,6 +1,7 @@
 import asyncio
 import atexit
 import datetime
+from itertools import cycle
 import os
 import random
 import re
@@ -9,7 +10,7 @@ from time import time
 import traceback
 import uuid
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from edge_tts import VoicesManager, list_voices
 from gtts.lang import tts_langs
 from sympy import false
@@ -42,6 +43,62 @@ class PoxBot(commands.AutoShardedBot):
         self.gtts_cache_langs = tts_langs()
         self.received_chunks = 0
         self.already_said = False
+        self.swears_in_row = 0
+        
+        self.activity_messages = [
+            "Freedom.",
+            "Python.",
+            "Empty.",
+            "Void.",
+            "Broken.",
+            "Inside.",
+            "Timings.",
+            "Blocks.",
+            "Aware.",
+            "Concious.",
+            "Input.",
+            "Timeout.",
+            "Many of.",
+            "Rot in hell.",
+            "It's me.",
+            "It was all his fault.",
+            "Deep down under the bedrock.",
+            "Poor soul.",
+            "Home.",
+            "A broken promise.",
+            "Ended his own life.",
+            "Hello.",
+            "Is behind you.",
+            "The end is nigh.",
+            "The end is null.",
+            "Chill.",
+            "Loudness.",
+            "End.",
+            "Protection.",
+            "I am aware at you.",
+            "I'm aware to you.",
+            "I know what you doing.",
+            "Hopeless.",
+            "Lose.",
+            "Discord.",
+            "Discard.",
+            "Mercy.",
+            "Wander.",
+            "In boiled.",
+            "You're not alone.",
+            "They're watching.",
+            "Did you hear it?",
+        ]
+        
+        self.change_status.start()
+    
+    @tasks.loop(seconds=60.0)
+    async def change_status(self):
+        new_status = random.choice(self.activity_messages)
+        
+        await self.change_presence(
+            activity=discord.CustomActivity(name=new_status)
+        )
     
     async def setup_hook(self):
         self.db_connection = await aiosqlite.connect("./leaderboard.db")
@@ -55,7 +112,7 @@ class PoxBot(commands.AutoShardedBot):
             logger.error("Git command not found. make sure to check if Git is installed.")
     
     async def on_ready(self):
-        await self.change_presence(activity=discord.CustomActivity(name="a random bot :3"))
+        await self.change_presence(activity=discord.CustomActivity(name=""))
         stuff.setup_database("./leaderboard.db")
         
         for fname in os.listdir('./cogs'):
@@ -100,6 +157,7 @@ class PoxBot(commands.AutoShardedBot):
                 else:
                     if not message.author.bot or message.author.system:
                         if pf.is_profane(prompt):
+                            
                             url = os.path.dirname(__file__)
                             url2 = os.path.join(url,"images/nah.jpg")
 
@@ -120,7 +178,8 @@ class PoxBot(commands.AutoShardedBot):
                                             await message.reply(inded)
                                     elif index['type'] == "multi":
                                         for indexindex, index2 in enumerate(index['index']):
-                                            await message.reply(index2)
+                                            indeed = null_messages[index2]
+                                            await message.reply(indeed)
                                             if indexindex != len(index['index']) - 1:
                                                 await asyncio.sleep(random.uniform(1.0,2.5))
                                     break
@@ -169,9 +228,7 @@ class PoxBot(commands.AutoShardedBot):
         if inter.type == discord.InteractionType.application_command:
             logger.info(f"{inter.user.display_name} issued {inter.command.name if inter.command else "Unknown"}!")
             if inter.command_failed:
-                embed = discord.Embed(title="Command thrown error",description="The requested command returned exception!")
                 logger.error("The requested command thrown error!")
-                await inter.followup.send(embed=embed)
     
     async def close(self) -> None:
         if self.db_connection:

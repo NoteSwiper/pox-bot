@@ -73,9 +73,9 @@ class Checker(commands.Cog):
                 
                 await interaction.followup.send(embed=e)
             else:
-                await interaction.followup.send("User not found!")
+                await interaction.followup.send("User not found.")
         except Exception as e:
-            await interaction.followup.send(f"Error! {e} 3:")
+            await interaction.followup.send(f"Error. {e}")
             logger.error(f"Error: {e}")
     
     @checker_group.command(name="role",description="Checks role information")
@@ -110,9 +110,9 @@ class Checker(commands.Cog):
                 
                 await interaction.followup.send(embed=e)
             else:
-                await interaction.followup.send("User not found!")
+                await interaction.followup.send("User not found.")
         except Exception as e:
-            await interaction.followup.send(f"Error! {e} 3:")
+            await interaction.followup.send(f"Error. {e}")
             logger.error(f"Error: {e}")
     
     @checker_group.command(name="nsfw_level",description="Checks if server has NSFW Level")
@@ -151,6 +151,74 @@ class Checker(commands.Cog):
             ])
         else:
             embed.description = "Not guild"
+            await interaction.followup.send(embed=embed)
+            return
+        
+        await interaction.followup.send(embed=embed)
+        
+    @checker_group.command(name="bot_list",description="Returns bot list.")
+    async def get_bot_list(self, interaction: Interaction):
+        await interaction.response.defer(thinking=True)
+        embed = Embed(title="Bot list",description="")
+        
+        if interaction.guild:
+            memb = []
+            embed.description = '\n'.join([
+                m.name
+                for m in interaction.guild.members
+                if m.bot
+            ])
+        else:
+            embed.description = "Not guild"
+            await interaction.followup.send(embed=embed)
+            return
+        
+        await interaction.followup.send(embed=embed)
+    
+    @checker_group.command(name="bot_count", description="Returns total bot count.")
+    async def get_bot_count(self, interaction: Interaction):
+        await interaction.response.defer(thinking=True)
+        embed = Embed(title="Bot count in this server",description="")
+        
+        if interaction.guild:
+            embed.description = f"{len([[
+                m
+                for m in interaction.guild.members
+                if m.bot
+            ]])} is in this server."
+        else:
+            embed.description = "You're not in guild."
+            await interaction.followup.send(embed=embed)
+            return
+        
+        await interaction.followup.send(embed=embed)
+    
+    @checker_group.command(name="list", description="Returns total members")
+    async def get_list_members(self, interaction: Interaction):
+        await interaction.response.defer(thinking=True)
+        embed = Embed(title="Mmembers in this server",description="")
+        
+        if interaction.guild:
+            embed.description = '\n'.join([
+                m.name
+                for m in interaction.guild.members
+            ])
+        else:
+            embed.description = "You're not in guild."
+            await interaction.followup.send(embed=embed)
+            return
+        
+        await interaction.followup.send(embed=embed)
+    
+    @checker_group.command(name="count", description="Returns total members")
+    async def get_total_members(self, interaction: Interaction):
+        await interaction.response.defer(thinking=True)
+        embed = Embed(title="Total members",description="")
+        
+        if interaction.guild:
+            embed.description = f"{len(interaction.guild.members)} is in this server."
+        else:
+            embed.description = "You're not in guild."
             await interaction.followup.send(embed=embed)
             return
         

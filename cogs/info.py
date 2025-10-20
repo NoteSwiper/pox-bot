@@ -25,6 +25,8 @@ class Info(commands.Cog):
             'Version': f"Python {platform.python_version()}, discord.py {discord.__version__}",
             'Bot Version': f"git+{commit_hash} {last_commit_message}; {namesignature}" if commit_hash else "Unknown",
             'Platform': "",
+            'Total messages': f"{self.bot.handled_messages} messages",
+            'Total interactions': f"{self.bot.processed_interactions} / {self.bot.failed_interactions}",
             'Total Guilds': len(self.bot.guilds),
             'Total Chunks': len(self.bot.cached_messages),
             'Latency (ms)': round(self.bot.latency*100000)/100,
@@ -62,7 +64,7 @@ class Info(commands.Cog):
         for item, value in temp1.items():
             e.add_field(name=item,value=value)
         
-        e.set_footer(text="The bot is open-source. Click to this embed to access the site which is published :3")
+        e.set_footer(text="The bot is open-source. Click to this embed to access the site which is published.")
         
         await interaction.followup.send(embed=e)
     

@@ -18,7 +18,7 @@ class Detector(commands.Cog):
         randum = int(random.random()*100)
         dac = check_map(randum,100)
         
-        e = Embed(title=f"Is {member.name} gay?",description=f"Result: {dac} gay!")
+        e = Embed(title=f"Is {member.name} gay?",description=f"Result: {dac} gay.")
         
         await interaction.followup.send(embed=e)
     
@@ -29,7 +29,7 @@ class Detector(commands.Cog):
         randum = int(random.random()*100)
         dac = check_map(randum,100)
         
-        e = Embed(title=f"Is {member.name} femboy?",description=f"Result: {dac} femboy!")
+        e = Embed(title=f"Is {member.name} femboy?",description=f"Result: {dac} femboy.")
         
         await interaction.followup.send(embed=e)
     
@@ -40,7 +40,7 @@ class Detector(commands.Cog):
         randum = int(random.random()*100)
         dac = check_map(randum,100)
         
-        e = Embed(title=f"Is {member.name} freaky?",description=f"Result: {dac} freaky!")
+        e = Embed(title=f"Is {member.name} freaky?",description=f"Result: {dac} freaky.")
         
         await interaction.followup.send(embed=e)
     
@@ -57,7 +57,7 @@ class Detector(commands.Cog):
         
         rand = round(random.randrange(0,100))
         
-        e = Embed(title=f"How much {member.name} is vibing", description=f"Result: {rand} %!")
+        e = Embed(title=f"How much {member.name} is vibing", description=f"Result: {rand} %.")
         await interaction.followup.send(embed=e)
     
     @detector_group.command(name="custom", description="Check if member is something specified in command")
@@ -67,7 +67,7 @@ class Detector(commands.Cog):
         randum = int(random.random()*100)
         dac = check_map(randum,100)
         
-        e = Embed(title=f"Is {member.name} {custom}?",description=f"Result: {dac} {custom}!")
+        e = Embed(title=f"Is {member.name} {custom}?",description=f"Result: {dac} {custom}.")
         
         await interaction.followup.send(embed=e)
     

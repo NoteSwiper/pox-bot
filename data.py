@@ -207,9 +207,10 @@ null_messages = [
     "Yes.",
     "Hello.",
     "Is behind you.",
-    "The end is nigh",
-    "The end is null",
-    "Rot in hell."
+    "The end is nigh.",
+    "The end is null.",
+    "Rot in hell.",
+    "err.type=null.thebrokenscript"
 ]
 
 null_interactions = {
@@ -276,5 +277,11 @@ null_interactions = {
     r"null": {
         "index": [15,16],
         "type": "multi",
+    },
+    r"where\s?it\s?c(o|a)me\s?from\??": {
+        "index": 18,
+        "type": "single",
     }
 }
+
+nullchill = ["Chill.","Please chill.","Why don't you listen to me?","I said, chill.","CHILL BRO I SWEAR.","..."]

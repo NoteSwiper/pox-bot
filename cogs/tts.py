@@ -59,7 +59,7 @@ class TTS(commands.Cog):
         dfile = discord.File(abuffer, filename="GoogleTTS.mp3")
         
         try:
-            await interaction.followup.send(f"Gotcha! :D\nType: Google TTS, Input: {text}",file=dfile)
+            await interaction.followup.send(f"Generated. >:D\nType: Google TTS, Input: {text}",file=dfile)
         except Exception as e:
             await interaction.followup.send(f"An error occured while sending speech: {e}")
             logger.exception(f"{e}")
@@ -86,7 +86,7 @@ class TTS(commands.Cog):
         dfile = discord.File(abuffer, filename=f"PiperTTS.mp3")
         
         try:
-            await interaction.followup.send(f"Gotcha! :D\nType: Piper TTS, Input: {text}",file=dfile)
+            await interaction.followup.send(f"Generated. >:D\nType: Piper TTS, Input: {text}",file=dfile)
         except Exception as e:
             await interaction.followup.send(f"An error occured while sending speech: {e}")
             logger.exception(f"{e}")
@@ -141,7 +141,7 @@ class TTS(commands.Cog):
         dfile = discord.File(abuffer, filename="eSpeakTTS.mp3")
         
         try:
-            await interaction.followup.send(f"Gotcha! :D\nType: eSpeak TTS, Input: {text}",file=dfile)
+            await interaction.followup.send(f"Generated. >:D\nType: eSpeak TTS, Input: {text}",file=dfile)
         except Exception as e:
             await interaction.followup.send(f"An error occured while sending speech: {e}")
             logger.exception(f"{e}")
@@ -180,7 +180,7 @@ class TTS(commands.Cog):
         dfile = discord.File(abuffer, filename="EdgeTTS.mp3")
         
         try:
-            await interaction.followup.send(f"Gotcha! :D\nType: Edge TTS, Input: {text}",file=dfile)
+            await interaction.followup.send(f"Genarated. >:D\nType: Edge TTS, Input: {text}",file=dfile)
         except Exception as e:
             await interaction.followup.send(f"An error occured while sending speech: {e}")
             logger.exception(f"{e}")

@@ -18,7 +18,7 @@ class Calculator(commands.Cog):
         
         value = clamp(value,0,max)
         
-        await interaction.response.send_message(f"Percentage: {round((value/max)*1000)/10}%! ;3")
+        await interaction.response.send_message(f"Percentage: {round((value/max)*1000)/10}%.")
 
 async def setup(bot):
     await bot.add_cog(Calculator(bot))
