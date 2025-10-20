@@ -88,6 +88,8 @@ class PoxBot(commands.AutoShardedBot):
             "You're not alone.",
             "They're watching.",
             "Did you hear it?",
+            "End of internet.",
+            "Null is watching you.",
         ]
         
     

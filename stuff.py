@@ -15,8 +15,6 @@ import base64
 import dotenv
 dotenv.load_dotenv()
 
-from voxpopuli import Voice
-
 import data
 
 if not os.path.exists('./logs'):
@@ -30,8 +28,6 @@ formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', 
 
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-
-voice = Voice(lang="us")
 
 def get_bot_token():
     logger.debug("Retrieving token...")
@@ -462,11 +458,6 @@ def get_latest_commit_message():
     except FileNotFoundError:
         logger.error("git command not found")
         return None
-
-def espeak_to_bytesio(text: str):
-    logger.debug("Converting voice into audio...")
-    sbuffer = voice.to_audio(text)
-    return sbuffer
 
 def approach_target(target: float,max_iterations: int = 125, x: float = 1.75,current_range:tuple = (-5,5),step_varience: tuple = (.5,2)):
     cmin,cmax = current_range
