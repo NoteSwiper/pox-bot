@@ -6,8 +6,8 @@ import asyncio
 from random import shuffle
 import random
 import re
-from discord.ext import commands
-from discord import app_commands, Interaction, Embed, User, Member, File
+from discord.ext import commands, tasks
+from discord import CustomActivity, app_commands, Interaction, Embed, User, Member, File
 
 import os
 
@@ -49,6 +49,11 @@ pf = profanityfilter.ProfanityFilter(extra_censor_list=[
 class Others(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.change_status.start()
+    
+    def cog_unload(self):
+        self.change_status.cancel()
+        return super().cog_unload()
     
     nullgroup = app_commands.Group(name="null",description=":)")
     
@@ -88,6 +93,14 @@ class Others(commands.Cog):
         e = Embed()
         e.set_image(url="attachment://nah.jpg")
         await interaction.response.send_message(file=pic,embed=e)
+    
+    @tasks.loop(seconds=60.0)
+    async def change_status(self):
+        new_status = random.choice(self.bot.activity_messages)
+        
+        await self.bot.change_presence(
+            activity=CustomActivity(name=new_status)
+        )
     
 async def setup(bot):
     await bot.add_cog(Others(bot))

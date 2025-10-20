@@ -232,3 +232,4 @@ voices
 voices/*
 *.db
 *.db-journal
+leaderboard.db

@@ -90,15 +90,6 @@ class PoxBot(commands.AutoShardedBot):
             "Did you hear it?",
         ]
         
-        self.change_status.start()
-    
-    @tasks.loop(seconds=60.0)
-    async def change_status(self):
-        new_status = random.choice(self.activity_messages)
-        
-        await self.change_presence(
-            activity=discord.CustomActivity(name=new_status)
-        )
     
     async def setup_hook(self):
         self.db_connection = await aiosqlite.connect("./leaderboard.db")
