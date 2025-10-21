@@ -85,7 +85,7 @@ class Others(commands.Cog):
     @nullgroup.command(name="kys",description="dead meme i think")
     async def kysimage(self, interaction: Interaction):
         url = os.path.dirname(__file__)
-        url2 = os.path.join(url,"../images/nah.jpg")
+        url2 = os.path.join(url,"../resources/nah.jpg")
 
         with open(url2, 'rb') as f:
             pic = File(f,"nah.jpg")

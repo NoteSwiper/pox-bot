@@ -192,7 +192,7 @@ class Management(commands.Cog):
     async def nyan_bot_image(self, ctx):
         try:
             url = os.path.dirname(__file__)
-            url2 = os.path.join(url,"images/windows_flavored_off_thing_staticc.gif")
+            url2 = os.path.join(url,"../resources/windows_flavored_off_thing_staticc.gif")
             
             with open(url2, 'rb') as f:
                 pic = discord.File(f)

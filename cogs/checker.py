@@ -181,11 +181,11 @@ class Checker(commands.Cog):
         embed = Embed(title="Bot count in this server",description="")
         
         if interaction.guild:
-            embed.description = f"{len([[
+            embed.description = f"{len([
                 m
                 for m in interaction.guild.members
                 if m.bot
-            ]])} is in this server."
+            ])} is in this server."
         else:
             embed.description = "You're not in guild."
             await interaction.followup.send(embed=embed)

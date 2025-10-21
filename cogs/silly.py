@@ -80,7 +80,7 @@ class Silly(commands.Cog):
     async def nyan_cat_image(self, ctx: commands.Context):
         try:
             url = os.path.dirname(__file__)
-            url2 = os.path.join(url,"images/nyancat_big.gif")
+            url2 = os.path.join(url,"../resources/nyancat_big.gif")
             
             with open(url2, 'rb') as f:
                 pic = discord.File(f)
