@@ -54,7 +54,7 @@ class PoxBot(commands.AutoShardedBot):
         logger.debug("Database initialized")
         
         try:
-            with open("../resources/what.txt",'r') as f:
+            with open("resources/what.txt",'r') as f:
                 self.activity_messages = f.read().splitlines()
         except Exception as e:
             logger.exception(f"Error occured: {e}")
