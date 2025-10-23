@@ -8,6 +8,7 @@ import random
 import re
 from discord.ext import commands, tasks
 from discord import CustomActivity, app_commands, Interaction, Embed, User, Member, File
+from typing import Optional
 
 import os
 
@@ -93,6 +94,35 @@ class Others(commands.Cog):
         e = Embed()
         e.set_image(url="attachment://nah.jpg")
         await interaction.response.send_message(file=pic,embed=e)
+    
+    @nullgroup.command(name="generate", description="Generates random sentence.")
+    async def generator(self, interaction: Interaction, index_to_generate: Optional[int], size: Optional[int]):
+        await interaction.response.defer()
+
+        choosen1 = []
+        if size is None:
+            size = 1
+        
+        for i in range(size):
+            if index_to_generate is not None:
+                length = len(self.bot.activity_messages)
+                if index_to_generate > length:
+                    choosen = random.choice(self.bot.activity_messages)
+                else:
+                    choosen = self.bot.activity_messages[index_to_generate]
+            else:
+                choosen = random.choice(self.bot.activity_messages)
+            
+            choosen1.append(choosen)
+        
+        e = Embed(
+            title="Ah.",
+            description="",
+        )
+
+        e.description = "\n".join(choosen1)
+
+        await interaction.followup.send(embed=e)
     
     @tasks.loop(seconds=60.0)
     async def change_status(self):

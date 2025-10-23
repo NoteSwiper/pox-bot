@@ -56,6 +56,8 @@ async def reload(interaction: discord.Interaction):
                 await bot.reload_extension(f'cogs.{fname[:-3]}')
             except Exception as e:
                 logger.exception(f"Exception thrown while reloading extension {fname[:-3]}.")
+    
+    await bot.tree.sync()
     await interaction.response.send_message("Commands are reloaded!")
     return
 

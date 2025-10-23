@@ -6,6 +6,8 @@ from discord import Embed, Interaction, Member, User, app_commands
 import discord
 from discord.ext import commands
 import distro
+from datetime import datetime
+import pytz
 
 from stuff import check_map, get_formatted_from_seconds
 
@@ -13,7 +15,7 @@ class Info(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
-    @app_commands.command(name="info", description="Shows bot information")
+    group = app_commands.Group(name="info", description="Informations.")
     async def script_info(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         e = Embed(title="Bot Information")
@@ -48,7 +50,7 @@ class Info(commands.Cog):
         
         await interaction.followup.send(embed=e)
     
-    @app_commands.command(name="latest_commit_data", description="Shows bot's latest git commit.")
+    @group.command(name="commit_data", description="Shows bot's latest git commit.")
     async def get_commit_data(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         
@@ -68,7 +70,7 @@ class Info(commands.Cog):
         
         await interaction.followup.send(embed=e)
     
-    @app_commands.command(name="ping", description="Pong!")
+    @group.command(name="ping", description="Pong!")
     async def ping(self, interaction: Interaction):
         await interaction.response.defer()
         e = Embed(title="Pong!")
@@ -82,5 +84,18 @@ class Info(commands.Cog):
             e.add_field(name=k,value=v,inline=True)
         
         await interaction.followup.send(embed=e)
+
+    @app_commands.command(name="pox",description="Say him 'p0x38 is retroslop >:3'")
+    async def pox_message(self, ctx: discord.Interaction):
+        await ctx.response.defer()
+        await ctx.followup.send("p0x38 is retroslop.")
+
+    @group.command(name="timedate", description="Shows time in bot's time")
+    async def get_bot_timestamp(self, ctx: discord.Interaction):
+        await ctx.response.defer()
+        timec = datetime.now(pytz.timezone("Asia/Tokyo"))
+        
+        await ctx.followup.send(f"I'm on {datetime.strftime(timec, '%Y-%m-%d %H:%M:%S%z')}.")
+    
 async def setup(bot):
     await bot.add_cog(Info(bot))

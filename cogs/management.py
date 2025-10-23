@@ -139,7 +139,7 @@ class Management(commands.Cog):
         except Exception as e:
             await ctx.reply(f"Failed to send DM. {e}", ephemeral=True)
             logger.error(f"Error. {e}")
-    
+
     @commands.hybrid_command(name="announce", description="Announces message")
     @commands.has_permissions(send_messages=True)
     @app_commands.describe(channel="Channel to send")

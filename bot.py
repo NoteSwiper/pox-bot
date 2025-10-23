@@ -44,58 +44,21 @@ class PoxBot(commands.AutoShardedBot):
         self.received_chunks = 0
         self.already_said = False
         self.swears_in_row = 0
+        self.servers = {}
         
-        self.activity_messages = [
-            "Freedom.",
-            "Python.",
-            "Empty.",
-            "Void.",
-            "Broken.",
-            "Inside.",
-            "Timings.",
-            "Blocks.",
-            "Aware.",
-            "Concious.",
-            "Input.",
-            "Timeout.",
-            "Many of.",
-            "Rot in hell.",
-            "It's me.",
-            "It was all his fault.",
-            "Deep down under the bedrock.",
-            "Poor soul.",
-            "Home.",
-            "A broken promise.",
-            "Ended his own life.",
-            "Hello.",
-            "Is behind you.",
-            "The end is nigh.",
-            "The end is null.",
-            "Chill.",
-            "Loudness.",
-            "End.",
-            "Protection.",
-            "I am aware at you.",
-            "I'm aware to you.",
-            "I know what you doing.",
-            "Hopeless.",
-            "Lose.",
-            "Discord.",
-            "Discard.",
-            "Mercy.",
-            "Wander.",
-            "In boiled.",
-            "You're not alone.",
-            "They're watching.",
-            "Did you hear it?",
-            "End of internet.",
-            "Null is watching you.",
-        ]
+        self.activity_messages = []
         
     
     async def setup_hook(self):
         self.db_connection = await aiosqlite.connect("./leaderboard.db")
         logger.debug("Database initialized")
+        
+        try:
+            with open("../resources/what.txt",'r') as f:
+                self.activity_messages = f.read().splitlines()
+        except Exception as e:
+            logger.exception(f"Error occured: {e}")
+        
         try:
             output = subprocess.run(['git','rev-parse','--short','HEAD'], capture_output=True, text=True, check=True)
             self.commit_hash = output.stdout.strip()
@@ -129,16 +92,24 @@ class PoxBot(commands.AutoShardedBot):
         logger.debug("Syncing commands...")
         try:
             await self.tree.sync()
+            logger.debug("Synced commands!")
         except discord.HTTPException as e:
             logger.error(f"HTTPException thrown while trying to sync commands: {e}")
         except Exception as e:
             logger.exception(f"Unexcepted error thrown!")
-    
+        
     async def on_message(self,message: discord.Message):
         self.handled_messages += 1
         
         if message.author == self.user or message.mention_everyone: return
         
+        if message.guild and message.guild.id == 1382319176735264819:
+            content = message.content.lower()
+            if data.filter_pattern.search(content):
+                await message.delete()
+            #if pf.is_profane(content) or any(word in content for word in data.bad_words):
+            #    await message.delete()
+
         if self.user:
             if self.user.mentioned_in(message) == True or self.user in message.mentions:
                 prompt = message.content.replace(f'<@{self.user.id}>','').strip()

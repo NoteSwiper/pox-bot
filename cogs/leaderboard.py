@@ -37,6 +37,7 @@ class Leaderboard(Cog):
     
     @group.command(name="words",description="Shows leaderboard in server who has yapping all times")
     async def word_leaderboard(self, interaction: Interaction):
+        await interaction.response.defer()
         if self.bot.db_connection:
             async with self.bot.db_connection.execute("SELECT user_id, amount FROM words ORDER BY amount DESC LIMIT 32") as cursor:
                 lbdata = await cursor.fetchall()

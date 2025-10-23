@@ -1,3 +1,5 @@
+import re
+
 possible_map = {
     1: "nuh uh",
     2: "nah",
@@ -285,3 +287,38 @@ null_interactions = {
 }
 
 nullchill = ["Chill.","Please chill.","Why don't you listen to me?","I said, chill.","CHILL BRO I SWEAR.","..."]
+
+bad_words = [
+    'fuck',
+    'shit',
+    'ass',
+    'dick',
+    'nigga',
+    'nigger',
+    'anus',
+    'jap',
+    'dumb',
+    'idiot',
+    'dumbass',
+    'dumbshit',
+    'bullshit',
+    'bitchass',
+    'fucker',
+    'fucking',
+    'fucked',
+    'cock',
+    'cum',
+    'sex',
+    'penis',
+    'analsex',
+    'anus',
+    'anal',
+    'assfuck',
+    'asshole',
+    'wipe',
+    'wiped',
+    'wipes',
+    'bitches',
+]
+
+filter_pattern = re.compile(r'\b(' + '|'.join(re.escape(word) for word in bad_words) + r')\b', re.IGNORECASE)

@@ -2,9 +2,24 @@ import discord
 from discord import Interaction, app_commands
 from discord.ext import commands
 import requests
+import random
+
+from typing import Optional
 
 import data
 import stuff
+
+def zalgo(text, Z):
+    marks = list(map(chr, range(768, 879)))
+    words = text.split()
+    result = ' '.join(
+        ''.join(
+            c + ''.join(random.choice(marks) for _ in range((i // 2 + 1) * Z)) if c.isalnum() else c
+            for c in word
+        )
+        for i, word in enumerate(words)
+    )
+    return result
 
 class Converters(commands.Cog):
     def __init__(self,bot):
@@ -87,7 +102,7 @@ class Converters(commands.Cog):
             result += splitted2[index]
         
         await interaction.followup.send(result)
-    
+
     @converter_group.command(name="unbase7777", description="Base 7777 by galaxy_fl3x")
     async def debase7777ify(self, interaction: Interaction, text: str):
         await interaction.response.defer(thinking=True)
@@ -103,6 +118,14 @@ class Converters(commands.Cog):
             result += splitted1[index]
         
         await interaction.followup.send(result)
+
+    @converter_group.command(name="glitch", description="Makes the text corrupted.")
+    async def zalgo_text(self, interaction: Interaction, text:  str, level: Optional[int] = 2):
+        if level is None: level = 2
+        level = stuff.clamp(level, 1, 3)
+        result = zalgo(text, 2)
+
+        await interaction.response.send_message(result)
 # i will add this but not this time :(
 # https://colornames.org/search/json/?hex=FF0000
 

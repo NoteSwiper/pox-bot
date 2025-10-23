@@ -1,6 +1,8 @@
 from discord import Asset, Color, Embed, Interaction, Member, NSFWLevel, Role, Status, app_commands
 from discord.ext import commands
 
+from typing import Optional
+
 from logger import logger
 
 class Checker(commands.Cog):
@@ -9,6 +11,7 @@ class Checker(commands.Cog):
     
     checker_group = app_commands.Group(name="check",description="group for checker cog")
     
+
     @checker_group.command(name="server", description="checks current server information")
     async def check_server_info(self, interaction: Interaction):
         guild = interaction.guild
@@ -24,6 +27,7 @@ class Checker(commands.Cog):
                 'Members': guild.member_count,
                 'Created on': guild.created_at.strftime("%Y-%m-%d %H:%M:%S"),
                 'Current Shard': guild.shard_id if guild.shard_id else "Unknown",
+                'Over 250?': "Yes" if guild.large == True else "No",
             }
             
             e = Embed(
@@ -192,6 +196,24 @@ class Checker(commands.Cog):
             return
         
         await interaction.followup.send(embed=embed)
+        
+    @checker_group.command(name="usercount", description="Returns member count.")
+    async def get_user_count(self, interaction: Interaction):
+        await interaction.response.defer(thinking=True)
+        embed = Embed(title="Member count in this server",description="")
+        
+        if interaction.guild:
+            embed.description = f"{len([
+                m
+                for m in interaction.guild.members
+                if not m.bot
+            ])} is in this server."
+        else:
+            embed.description = "You're not in guild."
+            await interaction.followup.send(embed=embed)
+            return
+        
+        await interaction.followup.send(embed=embed)
     
     @checker_group.command(name="list", description="Returns total members")
     async def get_list_members(self, interaction: Interaction):
@@ -223,6 +245,22 @@ class Checker(commands.Cog):
             return
         
         await interaction.followup.send(embed=embed)
+    
+    @checker_group.command(name="remaining_member_to", description="Returns remaining members to reach a value.")
+    async def get_remaining_members(self, interaction: Interaction, goal: Optional[int] = 100):
+        await interaction.response.defer()
+        if not interaction.guild:
+            await interaction.followup.send("Object is not guild")
+            return
+        
+        member_count = (len(interaction.guild.members) if interaction.guild else 0)
+
+        if goal is None:
+            goal = (round(member_count/1000)*1000)+1000
+        
+        e = Embed(title=f"Remaining members to reach {goal} (including bots)", description=f"Need {goal-member_count} members to reach {goal}.")
+
+        await interaction.followup.send(embed=e)
 
 async def setup(bot):
     await bot.add_cog(Checker(bot))

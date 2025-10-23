@@ -21,30 +21,6 @@ class Silly(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
-    
-    @app_commands.command(name="pox",description="Say him 'p0x38 is retroslop >:3'")
-    async def pox_message(self, ctx: discord.Interaction):
-        await ctx.response.send_message("p0x38 is retroslop.")
-
-    @app_commands.command(name="bot_timezone", description="Shows time in bot's time")
-    async def get_bot_timestamp(self, ctx: discord.Interaction):
-        timec = datetime.now(pytz.timezone("Asia/Tokyo"))
-        
-        await ctx.response.send_message(f"I'm on {datetime.strftime(timec, '%Y-%m-%d %H:%M:%S%z')}.")
-    
-    @commands.hybrid_command(name="generate_number",description="Generates random value between min and max")
-    @app_commands.describe(min="Minimum integer")
-    @app_commands.describe(max="Maximum integer")
-    async def random_number(self, ctx: commands.Context,min = 0, max = 1):
-        await ctx.send(f"Result is **{random.uniform(min,max)}**.")
-    
-    @commands.hybrid_command(name="8ball",description="8ball like that; credit by galaxy_fl3x")
-    @app_commands.describe(ke="Text to check if it is")
-    async def eight_ball(self, ctx: commands.Context,*,ke):
-        choice = random.choice(data.tyc)
-        
-        await ctx.send(f"{ke}\nYou're {choice}.")
-    
     @commands.hybrid_command(name="say_meow",description="Make me say miaw :3")
     @app_commands.describe(put_face="Enables extra face such as :3")
     async def say_meow(self, ctx: commands.Context,put_face:str):
