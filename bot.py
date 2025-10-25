@@ -44,7 +44,6 @@ class PoxBot(commands.AutoShardedBot):
         self.received_chunks = 0
         self.already_said = False
         self.swears_in_row = 0
-        self.servers = {}
         
         self.activity_messages = []
         

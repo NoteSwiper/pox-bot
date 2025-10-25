@@ -42,7 +42,9 @@ INACTIVITY_THRESHOLD = 300
 bot = PoxBot(
     intents=intents,
     command_prefix=commands.when_mentioned_or("pox!"),
-    owner_id=1321324137850994758
+    owner_id=1321324137850994758,
+    #chunk_guilds_at_startup=False,
+    #member_cache_flags=discord.MemberCacheFlags.none()
 )
 
 tree = bot.tree

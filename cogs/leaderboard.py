@@ -47,6 +47,7 @@ class Leaderboard(Cog):
             if len(lbdata) == 0:
                 desc = "No one has said \"any words\" yet."
             else:
+                guild = interaction.guild
                 for i, (id,count) in enumerate(lbdata,1):
                     desc += f"{i}. <@{id}>: {int(count)} times!\n"
             

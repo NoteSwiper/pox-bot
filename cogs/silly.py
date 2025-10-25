@@ -263,6 +263,6 @@ class Silly(commands.Cog):
         e.set_image(url="attachment://output.png")
         if file and e:
             await ctx.reply(file=file, embed=e)
-        
+
 async def setup(bot):
     await bot.add_cog(Silly(bot))

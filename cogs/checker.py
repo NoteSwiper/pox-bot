@@ -141,7 +141,7 @@ class Checker(commands.Cog):
         
         await interaction.followup.send(embed=embed)
     
-    @checker_group.command(name="online",description="Returns online members")
+    @checker_group.command(name="online",description="Returns online members. This will not shows invisible members.")
     async def get_online(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         embed = Embed(title="Online list",description="")
@@ -149,7 +149,7 @@ class Checker(commands.Cog):
         if interaction.guild:
             memb = []
             embed.description = '\n'.join([
-                m.name
+                f"<@{m.id}>"
                 for m in interaction.guild.members
                 if m.status not in (Status.offline, Status.invisible) and not m.bot
             ])

@@ -16,6 +16,8 @@ class Info(commands.Cog):
         self.bot = bot
     
     group = app_commands.Group(name="info", description="Informations.")
+
+    @group.command(name="botinfo", description="I always with you :)")
     async def script_info(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         e = Embed(title="Bot Information")

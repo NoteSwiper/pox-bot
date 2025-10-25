@@ -23,17 +23,27 @@ class SpeakEngineType(Enum):
 class Management(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
-    @commands.hybrid_command(name="kick",description="Kicks member")
+        
+    @app_commands.command(name="kick", description="Kick a member.")
     @commands.has_permissions(kick_members=True)
-    @app_commands.describe(member="Member to kick")
-    @app_commands.describe(reason="Reason to kick member")
-    async def kick_member(self, ctx: commands.Context, member: discord.Member, *,reason=None):
+    @app_commands.describe(member="Member to kick.")
+    @app_commands.describe(reason="Reason for member to give in DM.")
+    async def kick(self, interaction: Interaction, member: discord.Member, reason: Optional[str] = None):
+        await interaction.response.defer()
+        e = discord.Embed(title="Status")
         try:
-            await member.kick(reason=reason if reason else "No reason were provided")
-            await ctx.send(f"{member.name} has been kicked from the server.")
-        except Exception as e:
-            logger.error("Error. {e}")
+            await member.kick(reason=(reason if reason is not None else "Reason not provided by issuer."))
+            e.description = f"{member.name} has been kicked from the server."
+            await interaction.followup.send(embed=e)
+        except discord.Forbidden:
+            e.description = f"You do not have permission to kick {member.name}."
+            await interaction.followup.send(embed=e)
+        except discord.HTTPException:
+            e.description = f"The operation has failed."
+            await interaction.followup.send(embed=e)
+        except Exception as ex:
+            e.description = f"Uncaught exception. {ex}"
+            await interaction.followup.send(embed=e)
     
     @commands.hybrid_command(name="ban", description="Bans member from the server")
     @commands.has_permissions(ban_members=True)
@@ -102,6 +112,20 @@ class Management(commands.Cog):
             
             await interaction.followup.send(f"Deleted {limit} messages.")
     
+    @app_commands.command(name="purge", description="Purges a specific amount of messages sent earlier.")
+    @commands.has_permissions(manage_messages=True)
+    async def purge_messages(self, interaction: Interaction, limit: Optional[int] = 100):
+        await interaction.response.defer()
+
+        def check_messages(m):
+            return not interaction.message
+
+        deleted_count = 0
+
+        if isinstance(interaction.channel, discord.TextChannel):
+            deleted = await interaction.channel.purge(limit=limit if limit is not None else 100, check=check_messages)
+            await interaction.followup.send(f"Purged {len(deleted)} messages.")
+
     @commands.hybrid_command(name="delete_botmessages",description="Deletes bot's messages")
     @app_commands.describe(limit="How much bot deletes it")
     @commands.has_permissions(manage_channels=True, manage_messages=True)
@@ -139,6 +163,32 @@ class Management(commands.Cog):
         except Exception as e:
             await ctx.reply(f"Failed to send DM. {e}", ephemeral=True)
             logger.error(f"Error. {e}")
+    
+    @app_commands.command(name="give_role",description="Gives a member role.")
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.has_permissions(manage_roles=True)
+    async def give_role(self, interaction: Interaction, member: discord.Member, role: discord.Role):
+        try:
+            await member.add_roles(role)
+            await interaction.response.send_message("Given.")
+        except discord.Forbidden:
+            await interaction.response.send_message("I can't.")
+        except Exception as e:
+            await interaction.response.send_message("Error occured.")
+            logger.exception(e)
+    
+    @app_commands.command(name="take_role",description="Takes a member role.")
+    @commands.has_guild_permissions(manage_roles=True)
+    @commands.has_permissions(manage_roles=True)
+    async def take_role(self, interaction: Interaction, member: discord.Member, role: discord.Role):
+        try:
+            await member.remove_roles(role)
+            await interaction.response.send_message("Taken.")
+        except discord.Forbidden:
+            await interaction.response.send_message("I can't.")
+        except Exception as e:
+            await interaction.response.send_message("Error occured.")
+            logger.exception(e)
 
     @commands.hybrid_command(name="announce", description="Announces message")
     @commands.has_permissions(send_messages=True)
