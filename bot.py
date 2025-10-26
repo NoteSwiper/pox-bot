@@ -13,7 +13,6 @@ import discord
 from discord.ext import commands, tasks
 from edge_tts import VoicesManager, list_voices
 from gtts.lang import tts_langs
-from sympy import false
 import stuff
 import data
 import aiosqlite
@@ -189,7 +188,7 @@ class PoxBot(commands.AutoShardedBot):
     
     async def on_interaction(self,inter: discord.Interaction):
         if inter.type == discord.InteractionType.application_command:
-            logger.info(f"{inter.user.display_name} issued {inter.command.name if inter.command else "Unknown"}!")
+            logger.info(f"{inter.user.display_name} issued {inter.command.name if inter.command else "Unknown"} on {inter.guild.name if inter.guild else "[User-mode]"}.")
             if inter.command_failed:
                 logger.error("The requested command thrown error!")
     

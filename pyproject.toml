@@ -23,8 +23,7 @@ dependencies = [
     "rich (>=14.2.0,<15.0.0)",
     "json-config (>=2.0.1,<3.0.0)",
     "python-dotenv (>=1.1.1,<2.0.0)",
-    "profanityfilter (>=2.1.0,<3.0.0)",
-    "zalgo-text"
+    "profanityfilter (>=2.1.0,<3.0.0)"
 ]
 
 

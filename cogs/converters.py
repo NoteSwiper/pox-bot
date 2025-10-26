@@ -39,42 +39,30 @@ class Converters(commands.Cog):
     @converter_group.command(name="uwu", description="same with say_uwuify, but with mention lol")
     @app_commands.describe(text="Text to be uwuified")
     async def uwuify(self, ctx: Interaction, text: str):
-        if ctx.message is None:
-            await ctx.response.send_message("ctx.message is None, aborting")
-            return
-        else:
-            await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True)
         
         try:
-            await ctx.followup.send(f"<@{ctx.message.author.id}>: {stuff.to_uwu(text)}")
+            await ctx.followup.send(f"<@{ctx.user.id}>: {stuff.to_uwu(text)}")
         except Exception as e:
             await ctx.followup.send(f"Error. {e}")
     
     @converter_group.command(name="base64", description="Makes your message into base64")
     @app_commands.describe(text="Text to be base64-ified")
     async def base64ify(self, ctx: Interaction, text: str):
-        if ctx.message is None:
-            await ctx.response.send_message("ctx.message is None, aborting")
-            return
-        else:
-            await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True)
         
         try:
-            await ctx.followup.send(f"<@{ctx.message.author.id}>: {stuff.base64_encode(text)}")
+            await ctx.followup.send(f"<@{ctx.user.id}>: {stuff.base64_encode(text)}")
         except Exception as e:
             await ctx.followup.send(f"Error. {e}")
     
     @converter_group.command(name="unbase64", description="Makes your base64 message decoded")
     @app_commands.describe(text="Base64 to be textified")
     async def debase64ify(self, ctx: Interaction, text: str):
-        if ctx.message is None:
-            await ctx.response.send_message("ctx.message is None, aborting")
-            return
-        else:
-            await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True)
         
         try:
-            await ctx.followup.send(f"<@{ctx.message.author.id}>: {stuff.base64_decode(text)}")
+            await ctx.followup.send(f"<@{ctx.user.id}>: {stuff.base64_decode(text)}")
         except Exception as e:
             await ctx.followup.send(f"Error. {e}")
     
