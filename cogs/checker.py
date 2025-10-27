@@ -13,6 +13,7 @@ class Checker(commands.Cog):
     
 
     @checker_group.command(name="server", description="checks current server information")
+    @commands.guild_only()
     async def check_server_info(self, interaction: Interaction):
         guild = interaction.guild
         
@@ -46,6 +47,7 @@ class Checker(commands.Cog):
             await interaction.followup.send("It seems the guild unavailable.")
     
     @checker_group.command(name="user",description="Checks user information")
+    @commands.guild_only()
     async def check_user_info(self, interaction: Interaction, user: Member):
         await interaction.response.defer(thinking=True)
         try:
@@ -83,6 +85,7 @@ class Checker(commands.Cog):
             logger.error(f"Error: {e}")
     
     @checker_group.command(name="role",description="Checks role information")
+    @commands.guild_only()
     async def check_role_info(self, interaction: Interaction, role: Role):
         await interaction.response.defer(thinking=True)
         try:
@@ -120,6 +123,7 @@ class Checker(commands.Cog):
             logger.error(f"Error: {e}")
     
     @checker_group.command(name="nsfw_level",description="Checks if server has NSFW Level")
+    @commands.guild_only()
     async def check_nsfw_level(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         embed = Embed(title="Is server NSFW?",description="")
@@ -142,6 +146,7 @@ class Checker(commands.Cog):
         await interaction.followup.send(embed=embed)
     
     @checker_group.command(name="online",description="Returns online members. This will not shows invisible members.")
+    @commands.guild_only()
     async def get_online(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         embed = Embed(title="Online list",description="")
@@ -161,6 +166,7 @@ class Checker(commands.Cog):
         await interaction.followup.send(embed=embed)
         
     @checker_group.command(name="bot_list",description="Returns bot list.")
+    @commands.guild_only()
     async def get_bot_list(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         embed = Embed(title="Bot list",description="")
@@ -180,6 +186,7 @@ class Checker(commands.Cog):
         await interaction.followup.send(embed=embed)
     
     @checker_group.command(name="bot_count", description="Returns total bot count.")
+    @commands.guild_only()
     async def get_bot_count(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         embed = Embed(title="Bot count in this server",description="")
@@ -198,6 +205,7 @@ class Checker(commands.Cog):
         await interaction.followup.send(embed=embed)
         
     @checker_group.command(name="usercount", description="Returns member count.")
+    @commands.guild_only()
     async def get_user_count(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         embed = Embed(title="Member count in this server",description="")
@@ -216,6 +224,7 @@ class Checker(commands.Cog):
         await interaction.followup.send(embed=embed)
     
     @checker_group.command(name="list", description="Returns total members")
+    @commands.guild_only()
     async def get_list_members(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         embed = Embed(title="Mmembers in this server",description="")
@@ -233,6 +242,7 @@ class Checker(commands.Cog):
         await interaction.followup.send(embed=embed)
     
     @checker_group.command(name="count", description="Returns total members")
+    @commands.guild_only()
     async def get_total_members(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         embed = Embed(title="Total members",description="")
@@ -247,6 +257,7 @@ class Checker(commands.Cog):
         await interaction.followup.send(embed=embed)
     
     @checker_group.command(name="remaining_member_to", description="Returns remaining members to reach a value.")
+    @commands.guild_only()
     async def get_remaining_members(self, interaction: Interaction, goal: Optional[int] = 100):
         await interaction.response.defer()
         if not interaction.guild:
@@ -259,6 +270,29 @@ class Checker(commands.Cog):
             goal = (round(member_count/1000)*1000)+1000
         
         e = Embed(title=f"Remaining members to reach {goal} (including bots)", description=f"Need {goal-member_count} members to reach {goal}.")
+
+        await interaction.followup.send(embed=e)
+    
+    @checker_group.command(name="userstatus", description="Check user's status")
+    @commands.guild_only()
+    async def get_user_status(self, interaction: Interaction, member: Member):
+        await interaction.response.defer()
+        result = ""
+        match (member.status):
+            case Status.online:
+                result = "Online"
+            case Status.idle:
+                result = "Idle"
+            case Status.do_not_disturb:
+                result = "Do not disturb"
+            case Status.invisible:
+                result = "Offline"
+            case Status.offline:
+                result = "Offline"
+            case _:
+                result = "Unknown"
+        
+        e = Embed(title=f"<@{member.id}>'s status",description=f"<@{member.id}> is {result}!")
 
         await interaction.followup.send(embed=e)
 

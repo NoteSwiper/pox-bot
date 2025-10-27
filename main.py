@@ -60,7 +60,7 @@ async def reload(interaction: discord.Interaction):
                 logger.exception(f"Exception thrown while reloading extension {fname[:-3]}.")
     
     await bot.tree.sync()
-    await interaction.response.send_message("Commands are reloaded!")
+    await interaction.response.send_message("Commands are reloaded!", ephemeral=True, delete_after=10)
     return
 
 session_uuid = uuid.uuid4()

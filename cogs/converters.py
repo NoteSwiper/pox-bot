@@ -3,11 +3,13 @@ from discord import Interaction, app_commands
 from discord.ext import commands
 import requests
 import random
+import string
 
 from typing import Optional
 
 import data
 import stuff
+import ciphers
 
 def zalgo(text, Z):
     marks = list(map(chr, range(768, 879)))
@@ -25,7 +27,7 @@ class Converters(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
     
-    converter_group = app_commands.Group(name="converter",description="Commands for Converters")
+    converter_group = app_commands.Group(name="convert",description="Commands for Converters")
     
     @converter_group.command(name="meow",description="makes text to MEOW MEOW.")
     @app_commands.describe(text="Text to be meowified")
@@ -114,6 +116,61 @@ class Converters(commands.Cog):
         result = zalgo(text, 2)
 
         await interaction.response.send_message(result)
+    
+    @converter_group.command(name="nsrc1", description="Converts text into NSRC-1 Encoded")
+    async def nsrc1(self, interaction: Interaction, text: str):
+        await interaction.response.defer(thinking=True)
+        
+        alphabet = string.ascii_letters + string.digits
+        reversed = alphabet[::-1]
+        trans1 = str.maketrans(alphabet,reversed)
+        
+        shift = 6
+        shifted = alphabet[shift:] + alphabet[:shift]
+        trans2 = str.maketrans(alphabet, shifted)
+
+        ciphered_1 = text.translate(trans1)
+        ciphered_2 = ciphered_1.translate(trans2)
+
+        await interaction.followup.send(ciphered_2)
+        
+    @converter_group.command(name="un_nsrc1", description="Decodes NSRC-1 into text")
+    async def un_nsrc1(self, interaction: Interaction, text: str):
+        await interaction.response.defer(thinking=True)
+        
+        alphabet = string.ascii_letters + string.digits
+        reversed = alphabet[::-1]
+        trans1 = str.maketrans(reversed,alphabet)
+        
+        shift = -6
+        shifted = alphabet[shift:] + alphabet[:shift]
+        trans2 = str.maketrans(alphabet, shifted)
+
+        ciphered_1 = text.translate(trans2)
+        ciphered_2 = ciphered_1.translate(trans1)
+
+        await interaction.followup.send(ciphered_2)
+    
+    @converter_group.command(name="invert_letters", description="Makes the word inverts per letter.")
+    async def letterreverse(self, interaction: Interaction, text: str):
+        await interaction.response.send_message(ciphers.letter_reverser(text,False))
+    
+    @converter_group.command(name="caesar_cipher", description="Encrypts text by Caesar Cipher.")
+    async def caesar(self, interaction: Interaction, text: str, shift: int):
+        await interaction.response.send_message(ciphers.caesar_cipher(text,shift,False))
+        
+    @converter_group.command(name="uncaesar_cipher", description="Decrypts text by Caesar Cipher.")
+    async def decaesar(self, interaction: Interaction, text: str, shift: int):
+        await interaction.response.send_message(ciphers.caesar_cipher(text,shift,True))
+    
+    @converter_group.command(name="rail_fence", description="Encrypts text by Rail fence Cipher.")
+    async def railfence(self, interaction: Interaction, text: str, key: int):
+        await interaction.response.send_message(ciphers.rail_fence(text,key))
+    
+    @converter_group.command(name="unrail_fence", description="Decrypts text by Rail fence Cipher.")
+    async def unrailfence(self, interaction: Interaction, text: str, key: int):
+        await interaction.response.send_message(ciphers.decrypt_rail_fence(text,key))
+    
 # i will add this but not this time :(
 # https://colornames.org/search/json/?hex=FF0000
 

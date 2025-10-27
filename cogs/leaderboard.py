@@ -85,6 +85,26 @@ class Leaderboard(Cog):
         else:
             await interaction.followup.send("sorry, bot has no connection with Database.")
     
+    @group.command(name="mine", description="Shows your word points for no reason")
+    async def my_point(self , interaction: Interaction):
+        await interaction.response.defer()
+
+        if self.bot.db_connection:
+            async with self.bot.db_connection.execute("SELECT amount FROM words WHERE user_id = ?", (interaction.user.id,)) as cursor:
+                lbdata = await cursor.fetchone()
+            
+            desc = ""
+
+            if lbdata:
+                desc = f"You have {lbdata} points, maybe."
+            else:
+                desc = "It seems nothing you got."
+            
+            e = Embed(title="Times you said",description=desc)
+            
+            await interaction.followup.send(embed=e)
+        else:
+            await interaction.followup.send("sorry, bot has no connection with Database.")
     
     @group.command(name="words",description="Shows leaderboard who has yapping all times")
     async def word_leaderboard(self, interaction: Interaction):
