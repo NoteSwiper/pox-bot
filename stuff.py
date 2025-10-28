@@ -201,6 +201,7 @@ def is_sleeping(time: datetime.datetime,fromhour:int,tohour:int):
     else:
         return False
 
+"""
 def check_map(score: float,max:int):
     map = data.possible_map
     map_len = len(map)
@@ -216,6 +217,10 @@ def check_map(score: float,max:int):
     for sr,txt in scores.items():
         if score in sr:
             return map[txt]
+"""
+
+def check_map():
+    return random.choice(data.possibility_words)
 
 def get_formatted_from_seconds(seconds):
     seconds = seconds % (24 * 3600)

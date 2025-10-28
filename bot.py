@@ -43,8 +43,9 @@ class PoxBot(commands.AutoShardedBot):
         self.received_chunks = 0
         self.already_said = False
         self.swears_in_row = 0
-        
+        self.active_games = {}
         self.activity_messages = []
+        self.invites = []
         
     
     async def setup_hook(self):
@@ -95,7 +96,7 @@ class PoxBot(commands.AutoShardedBot):
             logger.error(f"HTTPException thrown while trying to sync commands: {e}")
         except Exception as e:
             logger.exception(f"Unexcepted error thrown!")
-        
+    
     async def on_message(self,message: discord.Message):
         self.handled_messages += 1
         
@@ -188,10 +189,34 @@ class PoxBot(commands.AutoShardedBot):
     
     async def on_interaction(self,inter: discord.Interaction):
         if inter.type == discord.InteractionType.application_command:
-            logger.info(f"{inter.user.display_name} issued {inter.command.name if inter.command else "Unknown"} on {inter.guild.name if inter.guild else "[User-mode]"}.")
+            self.processed_interactions += 1
+            logger.info(f"{inter.user.display_name} issued {inter.command.name if inter.command else "Unknown"} on {inter.guild.name if inter.guild and inter.guild.name.strip() is not None else "Unknown"}.")
             if inter.command_failed:
+                self.failed_interactions += 1
                 logger.error("The requested command thrown error!")
-    
+
+    async def on_member_join(self, member: discord.Member):
+        if member.guild.id == 1429484215325425797:
+            channel = self.get_channel(1432048267520114889)
+            if channel and isinstance(channel, discord.TextChannel):
+                embed = discord.Embed(
+                    title="Join notify",
+                    description=f"Member <@{member.id}> has joined."
+                )
+                embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
+                await channel.send(embed=embed)
+
+    async def on_member_leave(self, member: discord.Member):
+        if member.guild.id == 1429484215325425797:
+            channel = self.get_channel(1432048267520114889)
+            if channel and isinstance(channel, discord.TextChannel):
+                embed = discord.Embed(
+                    title="Leave notify",
+                    description=f"Member <@{member.id}> has left."
+                )
+                embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
+                await channel.send(embed=embed)
+
     async def close(self) -> None:
         if self.db_connection:
             await self.db_connection.commit()

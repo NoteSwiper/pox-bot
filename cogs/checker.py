@@ -48,38 +48,44 @@ class Checker(commands.Cog):
     
     @checker_group.command(name="user",description="Checks user information")
     @commands.guild_only()
-    async def check_user_info(self, interaction: Interaction, user: Member):
+    async def check_user_info(self, interaction: Interaction, member: Member):
         await interaction.response.defer(thinking=True)
         try:
-            if user:
-                roles = [f"{role.name}" for role in user.roles]
-                temp1 = {
-                    'User ID': user.id,
-                    'Name': user.display_name,
-                    'Bot': "True" if user.bot else "False",
-                    'Created on': user.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                    'Highest role': f"{user.top_role.name}",
-                    'Status': user.raw_status,
-                    'Nitro since': user.premium_since.strftime("%Y-%m-%d %H:%M:%S") if user.premium_since else "Unknown",
-                    'Joined at': user.joined_at.strftime("%Y-%m-%d %H:%M:%S") if user.joined_at else "Unknown",
-                    'Roles': ", ".join(roles)
-                }
+            if interaction.guild:
+                user = interaction.guild.get_member(member.id)
+                if user:
+                    roles = [f"{role.name}" for role in user.roles]
+                    temp1 = {
+                        'User ID': user.id,
+                        'Name': user.display_name,
+                        'Bot': "True" if user.bot else "False",
+                        'Created on': user.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                        'Highest role': f"{user.top_role.name}",
+                        'Status': user.raw_status,
+                        'Nitro since': user.premium_since.strftime("%Y-%m-%d %H:%M:%S") if user.premium_since else "It's non-nitro user.",
+                        'Joined at': user.joined_at.strftime("%Y-%m-%d %H:%M:%S") if user.joined_at else "Cannot find the date when this bro joined.",
+                        'Roles': ", ".join(roles)
+                    }
 
-                e = Embed(title=f"Information for <@{user.id}>")
+                    e = Embed(title=f"Information for <@{user.id}>")
 
-                for key,value in temp1.items():
-                    e.add_field(
-                        name=key,
-                        value=value,
-                        inline=True
-                    )
+                    for key,value in temp1.items():
+                        e.add_field(
+                            name=key,
+                            value=value,
+                            inline=True
+                        )
 
-                if user.display_avatar:
-                    e.set_thumbnail(url=user.display_avatar.url)
-                
-                await interaction.followup.send(embed=e)
+                    if user.display_avatar:
+                        e.set_thumbnail(url=user.display_avatar.url)
+                    else:
+                        e.set_thumbnail(url=user.default_avatar.url)
+
+                    await interaction.followup.send(embed=e)
+                else:
+                    await interaction.followup.send("User not found.")
             else:
-                await interaction.followup.send("User not found.")
+                await interaction.followup.send("The command only works in guild due to issue with cache.")
         except Exception as e:
             await interaction.followup.send(f"Error. {e}")
             logger.error(f"Error: {e}")
@@ -278,21 +284,13 @@ class Checker(commands.Cog):
     async def get_user_status(self, interaction: Interaction, member: Member):
         await interaction.response.defer()
         result = ""
-        match (member.status):
-            case Status.online:
-                result = "Online"
-            case Status.idle:
-                result = "Idle"
-            case Status.do_not_disturb:
-                result = "Do not disturb"
-            case Status.invisible:
-                result = "Offline"
-            case Status.offline:
-                result = "Offline"
-            case _:
-                result = "Unknown"
         
-        e = Embed(title=f"<@{member.id}>'s status",description=f"<@{member.id}> is {result}!")
+        if interaction.guild:
+            member2 = interaction.guild.get_member(member.id)
+            if member2:
+                result = member2.status
+
+        e = Embed(title=f"`{member.name}`'s status",description=f"<@{member.id}> is {result}!")
 
         await interaction.followup.send(embed=e)
 

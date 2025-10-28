@@ -96,9 +96,9 @@ class Leaderboard(Cog):
             desc = ""
 
             if lbdata:
-                desc = f"You have {lbdata} points, maybe."
+                desc = f"You have {lbdata[0]} points."
             else:
-                desc = "It seems nothing you got."
+                desc = "Nothing you got."
             
             e = Embed(title="Times you said",description=desc)
             

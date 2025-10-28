@@ -43,13 +43,19 @@ class Info(commands.Cog):
                 rows_to_add['Platform'] = f"{distro.name()} {distro.version()}"
             else:
                 rows_to_add['Platform'] = platform.platform()
+        else:
+            rows_to_add['Platform'] = platform.platform()
         
         if self.bot.launch_time2:
             rows_to_add['Launch time'] = get_formatted_from_seconds(round(time.time() - self.bot.launch_time2))
-        
+
+        lines = []
+
         for k,v in rows_to_add.items():
-            e.add_field(name=k,value=v,inline=True)
+            lines.append(f"{k}: {v}")
         
+        e.description = "\n".join(lines)
+
         await interaction.followup.send(embed=e)
     
     @group.command(name="commit_data", description="Shows bot's latest git commit.")
@@ -98,6 +104,12 @@ class Info(commands.Cog):
         timec = datetime.now(pytz.timezone("Asia/Tokyo"))
         
         await ctx.followup.send(f"I'm on {datetime.strftime(timec, '%Y-%m-%d %H:%M:%S%z')}.")
+    
+    @group.command(name="name_signature", description="Shows temporary signature for the bot.")
+    async def namesignature(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
+        await interaction.followup.send(f"{self.bot.name_signature}; {self.bot.session_uuid}")
     
 async def setup(bot):
     await bot.add_cog(Info(bot))

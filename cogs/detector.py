@@ -15,10 +15,11 @@ class Detector(commands.Cog):
     @app_commands.describe(member="Member to check")
     async def gay_detector(self, interaction: Interaction, member: Member):
         await interaction.response.defer(thinking=True)
-        randum = int(random.random()*100)
-        dac = check_map(randum,100)
+        #randum = int(random.random()*100)
+        #dac = check_map(randum,100)
+        dac = check_map()
         
-        e = Embed(title=f"Is {member.name} gay?",description=f"Result: {dac} gay.")
+        e = Embed(title=f"Is {member.name} gay?",description=f"{dac}")
         
         await interaction.followup.send(embed=e)
     
@@ -26,10 +27,11 @@ class Detector(commands.Cog):
     @app_commands.describe(member="Member to check")
     async def femboy_detector(self, interaction: Interaction, member: Member):
         await interaction.response.defer(thinking=True)
-        randum = int(random.random()*100)
-        dac = check_map(randum,100)
+        #randum = int(random.random()*100)
+        #dac = check_map(randum,100)
+        dac = check_map()
         
-        e = Embed(title=f"Is {member.name} femboy?",description=f"Result: {dac} femboy.")
+        e = Embed(title=f"Is {member.name} femboy?",description=f"{dac}")
         
         await interaction.followup.send(embed=e)
     
@@ -37,10 +39,11 @@ class Detector(commands.Cog):
     @app_commands.describe(member="Member to check")
     async def freaky_detector(self, interaction: Interaction, member: Member):
         await interaction.response.defer(thinking=True)
-        randum = int(random.random()*100)
-        dac = check_map(randum,100)
+        #randum = int(random.random()*100)
+        #dac = check_map(randum,100)
+        dac = check_map()
         
-        e = Embed(title=f"Is {member.name} freaky?",description=f"Result: {dac} freaky.")
+        e = Embed(title=f"Is {member.name} freaky?",description=f"{dac}")
         
         await interaction.followup.send(embed=e)
     
@@ -57,17 +60,18 @@ class Detector(commands.Cog):
         
         rand = round(random.randrange(0,100))
         
-        e = Embed(title=f"How much {member.name} is vibing", description=f"Result: {rand} %.")
+        e = Embed(title=f"How much {member.name} is vibing", description=f"He is {rand}% vibing.")
         await interaction.followup.send(embed=e)
     
     @detector_group.command(name="custom", description="Check if member is something specified in command")
     @app_commands.describe(member="Member to check")
     async def custom_detection(self, interaction: Interaction, member: Member, *, custom: str):
         await interaction.response.defer(thinking=True)
-        randum = int(random.random()*100)
-        dac = check_map(randum,100)
+        #randum = int(random.random()*100)
+        #dac = check_map(randum,100)
+        dac = check_map()
         
-        e = Embed(title=f"Is {member.name} {custom}?",description=f"Result: {dac} {custom}.")
+        e = Embed(title=f"Is {member.name} {custom}?",description=f"{dac}")
         
         await interaction.followup.send(embed=e)
     
