@@ -90,4 +90,4 @@ class Fun(Cog):
             await interaction.response.send_message(f"You've not even started the guess.")
 
 async def setup(bot):
-    bot.add_cog(Fun(bot))
+    await bot.add_cog(Fun(bot))

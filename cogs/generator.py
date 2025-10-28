@@ -151,4 +151,4 @@ class Generators(Cog):
         await ctx.followup.send(embed=e)
 
 async def setup(bot):
-    bot.add_cog(Generators(bot))
+    await bot.add_cog(Generators(bot))
