@@ -9,9 +9,11 @@ from discord.ext import commands
 from discord import app_commands
 from edge_tts import Communicate
 from gtts import gTTS
-
+from piper import PiperVoice
 from logger import logger
 import stuff
+
+voice = PiperVoice.load("../resources/voices/en_US-ryan-high.onnx")
 
 class TTS(commands.Cog):
     def __init__(self,bot):
@@ -58,6 +60,33 @@ class TTS(commands.Cog):
             await interaction.followup.send(f"An error occured while sending speech: {e}")
             logger.exception(f"{e}")
     
+    @ttsgroup.command(name="piper")
+    async def piper_text_to_speech(self, interaction: discord.Interaction, text: str):
+        await interaction.response.defer(thinking=True)
+        
+        abuffer = BytesIO()
+        try:
+            with wave.open(abuffer, 'wb') as wf:
+                wf.setnchannels(1)
+                wf.setsampwidth(2)
+                wf.setframerate(voice.config.sample_rate)
+                
+                for raw in voice.synthesize(text):
+                    wf.writeframes(raw.audio_int16_bytes)
+            abuffer.seek(0)
+        except Exception as e:
+            await interaction.followup.send(f"An error occured while generating speech: {e}")
+            logger.exception(f"{e}")
+            return
+        
+        dfile = discord.File(abuffer, filename=f"PiperTTS.mp3")
+        
+        try:
+            await interaction.followup.send(f"Generated. >:D\nType: Piper TTS, Input: {text}",file=dfile)
+        except Exception as e:
+            await interaction.followup.send(f"An error occured while sending speech: {e}")
+            logger.exception(f"{e}")
+
     @ttsgroup.command(name="edge")
     async def edge_text_to_speech(self, interaction: discord.Interaction, text: str, lang: Optional[str], slow: Optional[bool]):
         if not "edge_tts" in sys.modules:

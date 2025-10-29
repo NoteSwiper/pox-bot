@@ -152,9 +152,13 @@ class PoxBot(commands.AutoShardedBot):
         
         pox_count = 0
         separated_words = message.content.lower().split(" ")
-        
+
         if self.db_connection and self.user:
             if not message.author.bot or not message.author.system:
+                # log messages for making graphs of chat count in days or hours if i can
+                # I'm not doing bad things, trust me
+                # await self.db_connection.execute("INSERT INTO messages (id, content, user_id, timestamp, channel) VALUES (?, ?, ?, ?, ?)", (message.id, message.content, message.author.id, message.created_at.timestamp(), message.channel.id))
+                
                 user_id = str(message.author.id)
                 if separated_words:
                     if self.db_connection:
@@ -201,7 +205,7 @@ class PoxBot(commands.AutoShardedBot):
             if channel and isinstance(channel, discord.TextChannel):
                 embed = discord.Embed(
                     title="Join notify",
-                    description=f"Member <@{member.id}> has joined."
+                    description=f"Hello.\nMember <@{member.id}> has joined the server."
                 )
                 embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
                 await channel.send(embed=embed)
@@ -212,7 +216,7 @@ class PoxBot(commands.AutoShardedBot):
             if channel and isinstance(channel, discord.TextChannel):
                 embed = discord.Embed(
                     title="Leave notify",
-                    description=f"Member <@{member.id}> has left."
+                    description=f"Goodbye.\nMember <@{member.id}> has left."
                 )
                 embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
                 await channel.send(embed=embed)

@@ -162,6 +162,15 @@ def setup_database(database):
             amount INTEGER
         )
     """)
+    # cursor.execute("""
+    #     CREATE TABLE IF NOT EXISTS messages (
+    #         id INTEGER PRIMARY KEY,
+    #         content TEXT,
+    #         user_id INTEGER,
+    #         timestamp REAL,
+    #         channel INTEGER
+    #     )
+    # """)
     conn.commit()
     conn.close()
 

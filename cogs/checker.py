@@ -35,7 +35,7 @@ class Checker(commands.Cog):
             lines = []
             for key,value in temp1.items():
                 lines.append(f"{key}: `{value}`")
-                
+
             if guild.icon:
                 e.set_thumbnail(url=guild.icon.url)
             
@@ -178,7 +178,7 @@ class Checker(commands.Cog):
                 for key,value in temp1.items():
                     lines.append(f"{key}: `{value}`")
                 if role.display_icon:
-                    e.set_thumbnail(url=role.display_icon))
+                    e.set_thumbnail(url=role.display_icon)
                 
                 e.description = "\n".join(lines)
                 await interaction.followup.send(embed=e)
@@ -354,7 +354,7 @@ class Checker(commands.Cog):
 
         await interaction.followup.send(embed=e)
     
-    @checker_group.command(name="pfp", description="Shows user's guild PFP.")
+    @checker_group.command(name="avatar", description="Shows user's guild PFP.")
     @commands.guild_only()
     async def get_user_profile_picture(self, interaction: Interaction, member: Member):
         await interaction.response.defer()

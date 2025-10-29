@@ -2,6 +2,7 @@ import platform
 import random
 import time
 from typing import Optional
+import aiosqlite
 from discord import Embed, Interaction, Member, User, app_commands
 import discord
 from discord.ext import commands
@@ -110,6 +111,6 @@ class Info(commands.Cog):
         await interaction.response.defer()
 
         await interaction.followup.send(f"{self.bot.name_signature}; {self.bot.session_uuid}")
-    
+
 async def setup(bot):
     await bot.add_cog(Info(bot))
