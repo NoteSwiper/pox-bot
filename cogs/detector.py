@@ -74,6 +74,17 @@ class Detector(commands.Cog):
         e = Embed(title=f"Is {member.name} {custom}?",description=f"{dac}")
         
         await interaction.followup.send(embed=e)
+        
+    @detector_group.command(name="custom2", description="Check if something specified in command")
+    async def custom_detection2(self, interaction: Interaction, custom: str):
+        await interaction.response.defer(thinking=True)
+        #randum = int(random.random()*100)
+        #dac = check_map(randum,100)
+        dac = check_map()
+        
+        e = Embed(title=f"Is {custom}?",description=f"{dac}")
+        
+        await interaction.followup.send(embed=e)
     
 async def setup(bot):
     await bot.add_cog(Detector(bot))

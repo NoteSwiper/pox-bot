@@ -233,5 +233,4 @@ voices/*
 *.db
 *.db-journal
 leaderboard.db
-
 test.py

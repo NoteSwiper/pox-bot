@@ -1,4 +1,4 @@
-from discord import Asset, Color, Embed, Interaction, Member, NSFWLevel, Role, Status, app_commands
+from discord import Activity, ActivityType, Asset, Color, CustomActivity, Embed, Game, Interaction, Member, NSFWLevel, Role, Spotify, Status, Streaming, TextChannel, app_commands
 from discord.ext import commands
 
 from typing import Optional
@@ -30,22 +30,52 @@ class Checker(commands.Cog):
                 'Current Shard': guild.shard_id if guild.shard_id else "Unknown",
                 'Over 250?': "Yes" if guild.large == True else "No",
             }
-            
-            e = Embed(
-                title=f"Information for {guild.name}",
-                color=Color.blue()
-            )
-            
+            e = Embed(title=f"Information for {guild.name}")
+        
+            lines = []
             for key,value in temp1.items():
-                e.add_field(name=key,value=value, inline=True)
-            
+                lines.append(f"{key}: `{value}`")
+                
             if guild.icon:
                 e.set_thumbnail(url=guild.icon.url)
             
+            e.description = "\n".join(lines)
             await interaction.followup.send(embed=e)
         else:
             await interaction.followup.send("It seems the guild unavailable.")
     
+    @checker_group.command(name="channel", description="Checks channel information.")
+    @commands.guild_only()
+    async def check_channel_info(self, interaction: Interaction, channel: TextChannel):
+        await interaction.response.defer(thinking=True)
+        try:
+            if interaction.guild:
+                temp1 = {
+                    'Channel ID': channel.id,
+                    'Name': channel.name,
+                    'Topic': channel.topic,
+                    'Category': channel.category,
+                    'Created on': channel.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    'Last message': f"{channel.last_message.content} by {channel.last_message.author.display_name}" if channel.last_message else "None",
+                    'Position': channel.position,
+                }
+                
+                e = Embed(title=f"Information for #{channel.name}")
+
+                lines = []
+
+                for key,value in temp1.items():
+                    lines.append(f"{key}: `{value}`")
+                    
+                e.description = "\n".join(lines)
+
+                await interaction.followup.send(embed=e)
+            else:
+                await interaction.followup.send("Channel not found.")
+        except Exception as e:
+            await interaction.followup.send(f"Error. {e}")
+            logger.error(f"Error: {e}")
+
     @checker_group.command(name="user",description="Checks user information")
     @commands.guild_only()
     async def check_user_info(self, interaction: Interaction, member: Member):
@@ -54,7 +84,7 @@ class Checker(commands.Cog):
             if interaction.guild:
                 user = interaction.guild.get_member(member.id)
                 if user:
-                    roles = [f"{role.name}" for role in user.roles]
+                    roles = [f"{role.name}" for role in user.roles if role.name != "@everyone"]
                     temp1 = {
                         'User ID': user.id,
                         'Name': user.display_name,
@@ -67,19 +97,53 @@ class Checker(commands.Cog):
                         'Roles': ", ".join(roles)
                     }
 
-                    e = Embed(title=f"Information for <@{user.id}>")
+                    if user.activities:
+                        index_activity = 0
+                        for activity in user.activities:
+                            index_activity += 1
+                            if isinstance(activity, Activity):
+                                info = ""
+                                match (activity.type):
+                                    case ActivityType.playing:
+                                        info = f"Playing {activity.name}"
+                                    case ActivityType.streaming:
+                                        info = f"Streaming {activity.name}"
+                                    case ActivityType.listening:
+                                        info = f"Listening {activity.name}"
+                                    case ActivityType.watching:
+                                        info = f"Watching {activity.name}"
+                                    case ActivityType.custom:
+                                        info = activity.name
+                                    case ActivityType.competing:
+                                        info = f"Competing {activity.name}"
+                                    case _:
+                                        info = f"Unknown Type, {activity.name}"
+                                
+                                temp1[f'Activity #{index_activity}'] = f"{info} ({activity.state})"
+                            elif isinstance(activity, Game):
+                                temp1[f'Activity #{index_activity}'] = f"Playing {activity.name} on {activity.platform}"
+                            elif isinstance(activity, Streaming):
+                                temp1[f'Activity #{index_activity}'] = f"Streaming {activity.name} at {activity.platform}"
+                            elif isinstance(activity, CustomActivity):
+                                temp1[f'Activity #{index_activity}'] = activity.name
+                            elif isinstance(activity, Spotify):
+                                temp1[f'Activity #{index_activity}'] = f"Listening {activity.title} by {activity.artist} in {activity.album}"
+                            else:
+                                temp1[f'Activity #{index_activity}'] = "Unknown."
+                    
+                    e = Embed(title=f"Information for {user.display_name}")
+
+                    lines = []
 
                     for key,value in temp1.items():
-                        e.add_field(
-                            name=key,
-                            value=value,
-                            inline=True
-                        )
+                        lines.append(f"{key}: `{value}`")
 
                     if user.display_avatar:
                         e.set_thumbnail(url=user.display_avatar.url)
                     else:
                         e.set_thumbnail(url=user.default_avatar.url)
+                    
+                    e.description = "\n".join(lines)
 
                     await interaction.followup.send(embed=e)
                 else:
@@ -109,21 +173,17 @@ class Checker(commands.Cog):
                     "Members": ", ".join(members)
                 }
 
-                e = Embed(title=f"Information for <@{role.id}>")
-
+                e = Embed(title=f"Information for {role.name}")
+                lines = []
                 for key,value in temp1.items():
-                    e.add_field(
-                        name=key,
-                        value=value,
-                        inline=True
-                    )
-
-                if role.display_icon and isinstance(role.display_icon, Asset):
-                    e.set_thumbnail(url=role.display_icon.url)
+                    lines.append(f"{key}: `{value}`")
+                if role.display_icon:
+                    e.set_thumbnail(url=role.display_icon))
                 
+                e.description = "\n".join(lines)
                 await interaction.followup.send(embed=e)
             else:
-                await interaction.followup.send("User not found.")
+                await interaction.followup.send("Role not found.")
         except Exception as e:
             await interaction.followup.send(f"Error. {e}")
             logger.error(f"Error: {e}")
@@ -293,6 +353,16 @@ class Checker(commands.Cog):
         e = Embed(title=f"`{member.name}`'s status",description=f"<@{member.id}> is {result}!")
 
         await interaction.followup.send(embed=e)
+    
+    @checker_group.command(name="pfp", description="Shows user's guild PFP.")
+    @commands.guild_only()
+    async def get_user_profile_picture(self, interaction: Interaction, member: Member):
+        await interaction.response.defer()
+
+        embed = Embed(title=f"{member.display_name}'s Avatar.")
+        embed.set_image(url=member.display_avatar.url if member.display_avatar else member.default_avatar.url)
+
+        await interaction.followup.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Checker(bot))
