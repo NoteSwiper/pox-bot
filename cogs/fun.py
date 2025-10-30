@@ -1,6 +1,5 @@
-import re
 from discord.ext.commands import Cog
-from discord import app_commands, Embed, Interaction, Member, File
+from discord import app_commands, Interaction
 import random
 
 from matplotlib import pyplot as plt

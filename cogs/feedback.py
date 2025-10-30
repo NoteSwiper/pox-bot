@@ -1,6 +1,6 @@
 import discord
 from discord.ext.commands import Cog
-from discord import app_commands, Embed, Member, Interaction
+from discord import app_commands, Embed, Interaction
 
 class Feedback(Cog):
     def __init__(self, bot):

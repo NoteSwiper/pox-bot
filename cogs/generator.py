@@ -1,6 +1,5 @@
 from discord.ext.commands import Cog
-from discord import app_commands, Embed, Interaction, Member, File
-import random
+from discord import app_commands, Embed, Interaction, File
 import markovify
 from io import BytesIO
 from datetime import datetime

@@ -1,17 +1,11 @@
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from enum import Enum
 import time
-import io
 import os
-import platform
-import random
 from typing import Optional
 import discord
 from discord.ext import commands
 from discord import Interaction, app_commands
-import distro
-import edge_tts
-from gtts import gTTS
 import data
 from logger import logger
 import stuff

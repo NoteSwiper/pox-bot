@@ -1,16 +1,13 @@
 import platform
-import random
 import time
-from typing import Optional
-import aiosqlite
-from discord import Embed, Interaction, Member, User, app_commands
+from discord import Embed, Interaction, app_commands
 import discord
 from discord.ext import commands
 import distro
 from datetime import datetime
 import pytz
 
-from stuff import check_map, get_formatted_from_seconds
+from stuff import get_formatted_from_seconds
 
 class Info(commands.Cog):
     def __init__(self, bot):

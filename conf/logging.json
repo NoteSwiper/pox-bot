@@ -11,6 +11,11 @@
 			"format": "[{asctime}] [{levelname:<8}] {name}: {message}",
 			"datefmt": "%Y-%m-%d %H:%M:%S",
 			"style": "{"
+		},
+		"forchat": {
+			"format": "[{asctime}] {message}",
+			"datefmt": "%Y-%m-%d %H:%M:%S",
+			"style": "{"
 		}
 	},
 	"handlers": {
@@ -28,6 +33,18 @@
 			"maxBytes": 33554432,
 			"backupCount": 128,
 			"encoding": "utf-8"
+		},
+		"file_interact": {
+			"class": "logging.FileHandler",
+			"level": "INFO",
+			"formatter": "forchat",
+			"filename": "logs/interactions.log"
+		},
+		"console_interact": {
+			"class": "logging.StreamHandler",
+			"level": "DEBUG",
+			"formatter": "forchat",
+			"stream": "ext://sys.stdout"
 		}
 	},
 	"loggers": {
@@ -50,6 +67,11 @@
 			"level": "DEBUG",
 			"handlers": ["file"],
 			"propagate": false
+		},
+		"interactions": {
+			"level": "INFO",
+			"propagate": false,
+			"handlers": ["file_interact","console_interact"]
 		}
 	}
 }

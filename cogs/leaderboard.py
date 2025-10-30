@@ -1,8 +1,6 @@
-from enum import member
-from typing import Optional, Sequence
+from typing import Optional
 from discord import Embed, Forbidden, Guild, Interaction, Member, NotFound, app_commands
 from discord.ext.commands import Cog, guild_only
-import aiosqlite
 
 from logger import logger
 

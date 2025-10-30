@@ -1,14 +1,9 @@
 import asyncio
-from io import BytesIO
 import random
-from typing import Optional
 import os
-import aiosqlite
 import discord
-import markovify
-from matplotlib import pyplot as plt
 import pytz
-from datetime import datetime, UTC
+from datetime import datetime
 from discord.ext import commands
 from discord import Interaction, app_commands
 

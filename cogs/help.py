@@ -2,7 +2,6 @@ from typing import Optional
 from discord.ext import commands
 from discord import Embed, Interaction, app_commands
 
-
 class HelpCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -20,14 +19,18 @@ class HelpCog(commands.Cog):
             await interaction.response.send_message("Requested search index is larger than list length.",ephemeral=True)
             return
         
-        remaining = len(all_commands) - len(all_commands[:(index_number+1)*20])
-        limited_commands = all_commands[(index_number*20):(index_number + 1) * 20]
+        remaining = len(all_commands) - len(all_commands[:(index_number + 1) * 20])
+        limited_commands = all_commands[(index_number * 20):(index_number + 1) * 20]
+
+        lines = []
+
+        lines.append(f"Index: {index_number} / {(round(len(all_commands) / 20) - 1)}")
+        lines.append(f"Remaining: {remaining}")
         
         for command in limited_commands:
-            e.add_field(name=f"/{command.name}", value=command.description or "...",inline=True)
+            lines.append(f"/{command.name} - {command.description or "..."}")
         
-        e.add_field(name="Index",value=f"{index_number}/{(round(len(all_commands)/20)-1)}")
-        e.add_field(name="Remaining commands to see", value=f"{remaining} Commands")
+        e.description = "\n".join(lines)
         
         await interaction.response.send_message(embed=e, ephemeral=True)
 

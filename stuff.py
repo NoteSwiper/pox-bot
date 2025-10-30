@@ -1,11 +1,9 @@
 import datetime
-from io import BytesIO
 import subprocess
 import json
 import os
 import random
 import sqlite3
-import sys
 import time
 import unicodedata
 import logging
@@ -160,6 +158,14 @@ def setup_database(database):
         CREATE TABLE IF NOT EXISTS words (
             user_id TEXT PRIMARY KEY,
             amount INTEGER
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS custom (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            query TEXT,
+            author_id INT,
+            timestamp REAL
         )
     """)
     # cursor.execute("""

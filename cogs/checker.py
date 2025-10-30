@@ -1,4 +1,4 @@
-from discord import Activity, ActivityType, Asset, Color, CustomActivity, Embed, Game, Interaction, Member, NSFWLevel, Role, Spotify, Status, Streaming, TextChannel, app_commands
+from discord import Activity, ActivityType, CustomActivity, Embed, Game, Interaction, Member, NSFWLevel, Role, Spotify, Status, Streaming, TextChannel, app_commands
 from discord.ext import commands
 
 from typing import Optional

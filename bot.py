@@ -1,23 +1,21 @@
 import asyncio
-import atexit
 import datetime
-from itertools import cycle
 import os
 import random
 import re
 import subprocess
 from time import time
-import traceback
 import uuid
 import discord
-from discord.ext import commands, tasks
-from edge_tts import VoicesManager, list_voices
+from discord.ext import commands
 from gtts.lang import tts_langs
+from cache import Cache
 import stuff
 import data
 import aiosqlite
 import profanityfilter
-from logger import logger
+import roblox
+from logger import logger, interact_logger
 
 pf = profanityfilter.ProfanityFilter()
 
@@ -46,7 +44,8 @@ class PoxBot(commands.AutoShardedBot):
         self.active_games = {}
         self.activity_messages = []
         self.invites = []
-        
+        self.cache = Cache(60*60*24)
+        self.roblox_client = roblox.Client()
     
     async def setup_hook(self):
         self.db_connection = await aiosqlite.connect("./leaderboard.db")
@@ -220,6 +219,7 @@ class PoxBot(commands.AutoShardedBot):
                 )
                 embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
                 await channel.send(embed=embed)
+    
 
     async def close(self) -> None:
         if self.db_connection:

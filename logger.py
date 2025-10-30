@@ -6,6 +6,8 @@ from rich.logging import RichHandler
 
 logger = getLogger('bot')
 
+interact_logger = getLogger("interactions")
+
 with open('conf/logging.json', 'r') as f:
     log_conf = json.load(f)
 

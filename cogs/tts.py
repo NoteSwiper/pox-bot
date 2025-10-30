@@ -1,19 +1,16 @@
-import importlib
-import importlib.util
 from io import BytesIO
 import sys
 from typing import Optional
-import wave
 import discord
+import wave
 from discord.ext import commands
 from discord import app_commands
 from edge_tts import Communicate
 from gtts import gTTS
 from piper import PiperVoice
 from logger import logger
-import stuff
 
-voice = PiperVoice.load("../resources/voices/en_US-ryan-high.onnx")
+voice = PiperVoice.load("./resources/voices/en_US-ryan-high.onnx")
 
 class TTS(commands.Cog):
     def __init__(self,bot):

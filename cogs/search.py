@@ -1,0 +1,58 @@
+import time
+from discord.ext import commands, tasks
+from discord import CustomActivity, app_commands, Interaction, Embed, User, Member, File
+
+from bot import PoxBot
+from thefuzz import process
+
+class SearchIndexMaker(commands.Cog):
+    def __init__(self, bot: PoxBot):
+        self.bot = bot
+    
+    group = app_commands.Group(name="queryindex", description="Just for no reason")
+
+    @group.command(name="add", description="Add query to database.")
+    async def add_query(self, interaction: Interaction, value: str):
+        await interaction.response.defer()
+
+        if self.bot.db_connection:
+            try:
+                await self.bot.db_connection.execute("INSERT INTO custom (query,author_id,timestamp) VALUES (?,?,?)", (value, interaction.user.id, time.time()))
+                await interaction.followup.send(f"Your query has been added.")
+            except Exception as e:
+                await interaction.followup.send(f"Failed to process. {e}")
+                return
+        else:
+            await interaction.followup.send("The bot has not connected with Database.")
+            return
+    
+    @group.command(name="search", description="Search query as fuzzy search")
+    async def search_query(self, interaction: Interaction, needle: str):
+        await interaction.response.defer(thinking=True)
+
+        if self.bot.db_connection:
+            try:
+                async with self.bot.db_connection.execute("SELECT query FROM custom") as cursor:
+                    all_query = await cursor.fetchall()
+                
+                desc = []
+
+                data = process.extract(needle, all_query, limit=10)
+
+                for item in data:
+                    desc.append(f"{item[0][0]}: {item[1]}")
+                
+                embed = Embed(
+                    title=f"Fuzzy Match: {needle}",
+                    description="\n".join(desc)
+                )
+
+                await interaction.followup.send(f"Fuzzy searching completed.",embed=embed)
+            except Exception as e:
+                await interaction.followup.send(f"Failed to process. {e}")
+                return
+        else:
+            await interaction.followup.send("The bot has not connected with Database.")
+            return
+async def setup(bot):
+    await bot.add_cog(SearchIndexMaker(bot))

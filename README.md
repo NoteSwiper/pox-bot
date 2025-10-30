@@ -4,15 +4,19 @@ just an my bot's source code lolol
 
 ## Requirements
 
-You need `Python 3.12.12` and an package manager that supports pyproject.toml.
+```bash
+pip install -r requirements.txt
+```
 
-install packages by running (for example, poetry):
+or 
 
 ```bash
-poetry install
+py -m pip install -r requirements.txt
 ```
 
 ## Usage
+
+Make sure to activate virtualenv first.
 
 Run this command:
 

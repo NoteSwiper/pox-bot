@@ -1,4 +1,3 @@
-import atexit
 import os
 import subprocess
 import uuid
@@ -80,7 +79,5 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("Shutting down...")
             pass
-        except Exception as e:
-            print(f"An unexcepted error occured: {e}")
         finally:
-            print("Bot Closed")
+            print("Bot has been stopped")
