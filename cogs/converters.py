@@ -5,6 +5,7 @@ import string
 
 from typing import Optional
 
+from bot import PoxBot
 import data
 import stuff
 import ciphers
@@ -23,7 +24,7 @@ def zalgo(text, Z):
 
 class Converters(commands.Cog):
     def __init__(self,bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     converter_group = app_commands.Group(name="convert",description="Commands for Converters")
     
@@ -169,6 +170,26 @@ class Converters(commands.Cog):
     async def unrailfence(self, interaction: Interaction, text: str, key: int):
         await interaction.response.send_message(ciphers.decrypt_rail_fence(text,key))
     
+    @converter_group.command(name="morse_code", description="Converts text to morse code. (by AnnaYarik13Alt)")
+    async def morse_codify(self, interaction: Interaction, text: str):
+        await interaction.response.send_message(f"`{ciphers.morse_code(text)}`")
+
+    @converter_group.command(name="binary", description="Converts text to binary. (by AnnaYarik13Alt)")
+    async def binarify(self, interaction: Interaction, text: str):
+        await interaction.response.send_message(f"`{ciphers.binary(text)}`")
+    
+    @converter_group.command(name="demorse_code", description="Converts morse code to text. (by AnnaYarik13Alt)")
+    async def demorse_codify(self, interaction: Interaction, text: str):
+        await interaction.response.send_message({ciphers.morse_code(text,True)})
+
+    @converter_group.command(name="unbinary", description="Converts binary to text. (by AnnaYarik13Alt)")
+    async def unbinarify(self, interaction: Interaction, text: str):
+        await interaction.response.send_message(ciphers.binary(text,True))
+    
+    @converter_group.command(name="reverse_words", description="Reverses text per words.")
+    async def reverser(self, interaction: Interaction, text: str):
+        vce = ' '.join(word[::-1] for word in text.split(" "))
+        await interaction.response.send_message(vce)
 # i will add this but not this time :(
 # https://colornames.org/search/json/?hex=FF0000
 

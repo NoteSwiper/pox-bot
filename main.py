@@ -6,6 +6,7 @@ import discord
 
 from datetime import datetime, UTC
 from discord.ext import commands
+from discord import Forbidden, HTTPException, Interaction, MissingApplicationID, app_commands
 
 import stuff
 stuff.create_dir_if_not_exists("./logs")
@@ -48,19 +49,49 @@ bot = PoxBot(
 
 tree = bot.tree
 
-@tree.command(name="reload_cogs")
-async def reload(interaction: discord.Interaction):
+
+@app_commands.command(name="reload_cogs", description="Reloads cogs. (not restarting bot)")
+@commands.is_owner()
+async def reload_cogs(interaction: Interaction):
+    await interaction.response.defer()
     for fname in os.listdir('./cogs'):
         if fname.endswith('.py'):
-            logger.debug(f"Loading extension {fname[:-3]}")
+            logger.debug(f"Loading extension {fname[:-3]}.")
+            
             try:
-                await bot.reload_extension(f'cogs.{fname[:-3]}')
+                await bot.reload_extension(f"cogs.{fname[:-3]}")
+                logger.debug(f"Successfully loaded {fname[:-3]}.")
+            except commands.ExtensionNotLoaded as e:
+                logger.exception(f"Extension {fname[:-3]} was not loaded due to {e}.")
+            except commands.ExtensionNotFound:
+                logger.exception(f"Extension {fname[:-3]} was not found from cogs folder.")
+            except commands.NoEntryPointError:
+                logger.exception(f"Extension {fname[:-3]} has no entrypoint to load.")
+            except commands.ExtensionFailed as e:
+                logger.exception(f"Extension {fname[:-3]} has failed to load due to {e}.")
             except Exception as e:
-                logger.exception(f"Exception thrown while reloading extension {fname[:-3]}.")
+                logger.exception(f"Uncaught exception thrown while reloading, due to {e}.")
     
-    await bot.tree.sync()
-    await interaction.response.send_message("Commands are reloaded!", ephemeral=True, delete_after=10)
-    return
+    try:
+        await bot.tree.sync()
+    except app_commands.CommandSyncFailure:
+        logger.exception("CommandSyncFailure: Invalid command data")
+        return await interaction.followup.send("Failed to sync commands. It seems some commands has invalid data.")
+    except Forbidden:
+        logger.error("Forbidden: The bot doesn't have permission to use `application.commands`")
+        #await interaction.followup.send("Failed to sync commands. The scope `application.commands` is not allowed in this guild.\nMake sure to allow the usage of `application.commands`.")
+        return
+    except MissingApplicationID:
+        logger.error("MissingApplicationID: The application ID is empty or missing")
+        return
+    except app_commands.TranslationError:
+        logger.exception("TranslationError: Error occured while translating commands")
+        return await interaction.followup.send("Failed to sync commands. It seems the syncing failed due to translation failure.")
+    except HTTPException:
+        logger.error("HTTPException: Failed to sync commands")
+        return await interaction.followup.send("Failed to sync commands.")
+    
+    return await interaction.followup.send("Successfully reloaded cogs and synchronized commands to discord.")
 
 session_uuid = uuid.uuid4()
 

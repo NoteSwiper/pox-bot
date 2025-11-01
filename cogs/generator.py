@@ -6,13 +6,14 @@ from datetime import datetime
 
 from typing import Optional
 
+from bot import PoxBot
 import stuff
 
 from matplotlib import pyplot as plt
 
 class Generators(Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     
     @app_commands.command(name="target_close", description="Target Closing Algorithm")

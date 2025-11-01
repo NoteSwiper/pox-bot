@@ -8,13 +8,14 @@ from discord import app_commands
 from edge_tts import Communicate
 from gtts import gTTS
 from piper import PiperVoice
+from bot import PoxBot
 from logger import logger
 
 voice = PiperVoice.load("./resources/voices/en_US-ryan-high.onnx")
 
 class TTS(commands.Cog):
     def __init__(self,bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     ttsgroup = app_commands.Group(name="tts",description="Centre of yeah, TTS.")
     

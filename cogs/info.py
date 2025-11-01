@@ -7,11 +7,12 @@ import distro
 from datetime import datetime
 import pytz
 
+from bot import PoxBot
 from stuff import get_formatted_from_seconds
 
 class Info(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     group = app_commands.Group(name="info", description="Informations.")
 
@@ -33,7 +34,8 @@ class Info(commands.Cog):
             'Total Chunks': len(self.bot.cached_messages),
             'Latency (ms)': round(self.bot.latency*100000)/100,
             'Shards': len(self.bot.shards if not self.bot.shards is None else "Standalone"),
-		}
+            'Developer': "p0x38 (NoteSwiper)"
+        }
         
         if platform.system() == "Linux":
             os_rel = platform.freedesktop_os_release()

@@ -163,7 +163,7 @@ def setup_database(database):
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS custom (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            query TEXT,
+            query TEXT UNIQUE,
             author_id INT,
             timestamp REAL
         )

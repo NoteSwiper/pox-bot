@@ -3,11 +3,12 @@ from discord.ext import commands
 
 from typing import Optional
 
+from bot import PoxBot
 from logger import logger
 
 class Checker(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     checker_group = app_commands.Group(name="check",description="group for checker cog")
     

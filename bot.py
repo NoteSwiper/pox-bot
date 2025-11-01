@@ -16,14 +16,14 @@ import aiosqlite
 import profanityfilter
 import roblox
 from logger import logger, interact_logger
+from discord import Forbidden, HTTPException, Interaction, MissingApplicationID, app_commands
 
-pf = profanityfilter.ProfanityFilter()
+import aiofiles
+import json
 
 from data import null_interactions, null_messages
+
 class PoxBot(commands.AutoShardedBot):
-    """
-    Pox's discord bot
-    """
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args,**kwargs)
         
@@ -46,16 +46,52 @@ class PoxBot(commands.AutoShardedBot):
         self.invites = []
         self.cache = Cache(60*60*24)
         self.roblox_client = roblox.Client()
-    
+        self.profanity_filter = profanityfilter.ProfanityFilter()
+        self.blacklisted_words = {}
+        self.servers_data = {}
+        self.root_path = os.path.dirname(os.path.abspath(__file__))
+        self.available_togglers = [
+            "delete_message_with_swears"
+        ]
+        self.custom_activity = os.path.join(self.root_path, "resources/what_2.txt")
+
     async def setup_hook(self):
+        stuff.setup_database("./leaderboard.db")
+        
         self.db_connection = await aiosqlite.connect("./leaderboard.db")
         logger.debug("Database initialized")
-        
+
         try:
-            with open("resources/what.txt",'r') as f:
-                self.activity_messages = f.read().splitlines()
+            async with aiofiles.open('resources/blacklisted_words.json', 'r+') as f:
+                content = await f.read()
+                self.blacklisted_words = json.loads(content)
+                logger.debug(self.blacklisted_words)
+        except FileNotFoundError:
+            self.blacklisted_words = {}
+        except json.JSONDecodeError:
+            logger.error("blacklisted_words.json is empty or invalid.")
+            self.blacklisted_words = {}
+
+        try:
+            async with aiofiles.open('resources/server_data.json', 'r+') as f:
+                content = await f.read()
+                self.servers_data = json.loads(content)
+                logger.debug(self.servers_data)
+        except FileNotFoundError:
+            self.servers_data = {}
+        except json.JSONDecodeError:
+            logger.error("server_data.json is empty or invalid.")
+            self.servers_data = {}
+
+        try:
+            if self.custom_activity is not None:
+                with open(self.custom_activity, 'r') as f:
+                    self.activity_messages = f.read().splitlines()
+            else:
+                with open("resources/what.txt",'r') as f:
+                    self.activity_messages = f.read().splitlines()
         except Exception as e:
-            logger.exception(f"Error occured: {e}")
+            logger.exception(f"Error occured while trying to get activity message list: {e}")
         
         try:
             output = subprocess.run(['git','rev-parse','--short','HEAD'], capture_output=True, text=True, check=True)
@@ -64,19 +100,26 @@ class PoxBot(commands.AutoShardedBot):
             logger.error(f"Error occured: {e}")
         except FileNotFoundError:
             logger.error("Git command not found. make sure to check if Git is installed.")
-    
-    async def on_ready(self):
-        await self.change_presence(activity=discord.CustomActivity(name=""))
-        stuff.setup_database("./leaderboard.db")
         
         for fname in os.listdir('./cogs'):
             if fname.endswith('.py'):
-                logger.debug(f"Loading extension {fname[:-3]}")
+                logger.debug(f"Loading extension {fname[:-3]}.")
+
                 try:
-                    await self.load_extension(f'cogs.{fname[:-3]}')
+                    await self.load_extension(f"cogs.{fname[:-3]}")
+                    logger.debug(f"Successfully loaded {fname[:-3]}.")
+                except commands.ExtensionNotLoaded as e:
+                    logger.exception(f"Extension {fname[:-3]} was not loaded due to {e}.")
+                except commands.ExtensionNotFound:
+                    logger.exception(f"Extension {fname[:-3]} was not found from cogs folder.")
+                except commands.NoEntryPointError:
+                    logger.exception(f"Extension {fname[:-3]} has no entrypoint to load.")
+                except commands.ExtensionFailed as e:
+                    logger.exception(f"Extension {fname[:-3]} has failed to load due to {e}.")
                 except Exception as e:
-                    logger.exception(f"Exception thrown while loading extension {fname[:-3]}.")
-        
+                    logger.exception(f"Uncaught exception thrown while reloading, due to {e}.")
+
+    async def on_ready(self):
         if self.user:
             logger.info("\n".join((
                 "The client is logged into a bot!",
@@ -86,25 +129,53 @@ class PoxBot(commands.AutoShardedBot):
             )))
         else:
             logger.info("It seems client is connected with bot, but no user object found.")
-        
-        logger.debug("Syncing commands...")
+
         try:
             await self.tree.sync()
-            logger.debug("Synced commands!")
-        except discord.HTTPException as e:
-            logger.error(f"HTTPException thrown while trying to sync commands: {e}")
-        except Exception as e:
-            logger.exception(f"Unexcepted error thrown!")
+        except app_commands.CommandSyncFailure:
+            logger.exception("CommandSyncFailure: Invalid command data")
+        except Forbidden:
+            logger.error("Forbidden: The bot doesn't have permission to use `application.commands`")
+        except MissingApplicationID:
+            logger.error("MissingApplicationID: The application ID is empty or missing")
+        except app_commands.TranslationError:
+            logger.exception("TranslationError: Error occured while translating commands")
+        except HTTPException:
+            logger.error("HTTPException: Failed to sync commands")
     
     async def on_message(self,message: discord.Message):
         self.handled_messages += 1
         
         if message.author == self.user or message.mention_everyone: return
         
-        if message.guild and message.guild.id == 1382319176735264819:
-            content = message.content.lower()
-            if data.filter_pattern.search(content):
-                await message.delete()
+        if message.guild:
+            blacklisted_words = self.blacklisted_words.get(str(message.guild.id))
+            
+            has_permission = message.channel.permissions_for(message.guild.me).manage_messages
+            is_author_lower = message.author.top_role < message.guild.me.top_role if isinstance(message.author, discord.Member) else True
+            
+            try:
+                content = message.content.lower()                
+                if blacklisted_words is not None:
+                    combined_pattern = r'\b(' + '|'.join(blacklisted_words) + r')\b'
+                    is_match = re.search(combined_pattern, content)
+
+                    if is_match and is_author_lower and has_permission:
+                        logger.debug(f"Blacklisted word has found from message; deleting")
+                        await message.delete()
+                elif self.servers_data[str(message.guild.id)]['delete_message_with_swears'] == True:
+                    if data.filter_pattern.search(content) and is_author_lower and has_permission:
+                        logger.debug(f"Blacklisted word has found from message; deleting")
+                        await message.delete()
+            except KeyError:
+                pass
+            except Exception as e:
+                logger.exception(f"Uncaught exception: {e}")
+
+        #if message.guild and message.guild.id == 1382319176735264819:
+        #    content = message.content.lower()
+        #    if data.filter_pattern.search(content):
+        #        await message.delete()
             #if pf.is_profane(content) or any(word in content for word in data.bad_words):
             #    await message.delete()
 
@@ -118,7 +189,7 @@ class PoxBot(commands.AutoShardedBot):
                     await self.process_commands(message)
                 else:
                     if not message.author.bot or message.author.system:
-                        if pf.is_profane(prompt):
+                        if self.profanity_filter.is_profane(prompt):
                             
                             url = os.path.dirname(__file__)
                             url2 = os.path.join(url,"resources/nah.jpg")
@@ -222,12 +293,19 @@ class PoxBot(commands.AutoShardedBot):
     
 
     async def close(self) -> None:
+        async with aiofiles.open("resources/blacklisted_words.json", 'w+') as f:
+            await f.write(json.dumps(self.blacklisted_words, indent=4))
+        
+        async with aiofiles.open("resources/server_data.json", 'w+') as f:
+            await f.write(json.dumps(self.servers_data, indent=4))
+
         if self.db_connection:
             await self.db_connection.commit()
             await self.db_connection.close()
             logger.debug("Database closed")
+        
         return await super().close()
         
     def get_launch_time(self) -> datetime.datetime:
         return self.launch_time
-
+    

@@ -38,7 +38,8 @@
 			"class": "logging.FileHandler",
 			"level": "INFO",
 			"formatter": "forchat",
-			"filename": "logs/interactions.log"
+			"filename": "logs/interactions.log",
+			"encoding": "utf-8"
 		},
 		"console_interact": {
 			"class": "logging.StreamHandler",

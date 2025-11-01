@@ -3,11 +3,12 @@ from discord.ext import commands
 import discord
 from discord import app_commands
 
+from bot import PoxBot
 from stuff import clamp
 
 class Calculator(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     calc_group = app_commands.Group(name="calculate", description="A group for calculator cogs")
     

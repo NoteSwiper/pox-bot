@@ -7,7 +7,7 @@ from thefuzz import process
 
 class SearchIndexMaker(commands.Cog):
     def __init__(self, bot: PoxBot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     group = app_commands.Group(name="queryindex", description="Just for no reason")
 
@@ -18,9 +18,24 @@ class SearchIndexMaker(commands.Cog):
         if self.bot.db_connection:
             try:
                 await self.bot.db_connection.execute("INSERT INTO custom (query,author_id,timestamp) VALUES (?,?,?)", (value, interaction.user.id, time.time()))
-                await interaction.followup.send(f"Your query has been added.")
+                await interaction.followup.send(f"Your query has been added.", ephemeral=True, silent=True)
             except Exception as e:
-                await interaction.followup.send(f"Failed to process. {e}")
+                await interaction.followup.send(f"Failed to process. {e}", ephemeral=True)
+                return
+        else:
+            await interaction.followup.send("The bot has not connected with Database.")
+            return
+         
+    @group.command(name="remove", description="Remove query from database.")
+    async def remove_query(self, interaction: Interaction, value: str):
+        await interaction.response.defer()
+
+        if self.bot.db_connection:
+            try:
+                await self.bot.db_connection.execute(f"DELETE FROM custom WHERE query = \"{value}\"")
+                await interaction.followup.send(f"The query has been removed.", ephemeral=True, silent=True)
+            except Exception as e:
+                await interaction.followup.send(f"Failed to process. {e}", ephemeral=True)
                 return
         else:
             await interaction.followup.send("The bot has not connected with Database.")
@@ -47,7 +62,7 @@ class SearchIndexMaker(commands.Cog):
                     description="\n".join(desc)
                 )
 
-                await interaction.followup.send(f"Fuzzy searching completed.",embed=embed)
+                await interaction.followup.send(embed=embed)
             except Exception as e:
                 await interaction.followup.send(f"Failed to process. {e}")
                 return

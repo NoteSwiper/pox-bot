@@ -4,9 +4,11 @@ import random
 
 from matplotlib import pyplot as plt
 
+from bot import PoxBot
+
 class Fun(Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     @app_commands.command(name="guess_game", description="Starts a new number guessing game (1 ~ 100)")
     async def guess_game(self, interaction: Interaction):

@@ -6,6 +6,7 @@ from typing import Optional
 import discord
 from discord.ext import commands
 from discord import Interaction, app_commands
+from bot import PoxBot
 import data
 from logger import logger
 import stuff
@@ -16,7 +17,7 @@ class SpeakEngineType(Enum):
 
 class Management(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
         
     @app_commands.command(name="kick", description="Kick a member.")
     @commands.has_permissions(kick_members=True)

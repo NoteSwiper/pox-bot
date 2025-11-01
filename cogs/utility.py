@@ -4,13 +4,14 @@ from discord import app_commands, Interaction, Embed
 from typing import Optional
 
 import random
+from bot import PoxBot
 import data
 
 from logger import logger
 
 class Utility(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     @app_commands.command(name="random_integer", description="Generates random integer.")
     @app_commands.describe(min="Minimum integer", max="Maximum integer")

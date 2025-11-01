@@ -2,9 +2,11 @@ from typing import Optional
 from discord.ext import commands
 from discord import Embed, Interaction, app_commands
 
+from bot import PoxBot
+
 class HelpCog(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     @app_commands.command(name="help_v2")
     async def help_command(self, interaction: Interaction, index_number: Optional[int] = 0):

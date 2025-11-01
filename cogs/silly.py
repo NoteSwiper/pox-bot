@@ -1,12 +1,14 @@
 import asyncio
 import random
 import os
+import aiofiles
 import discord
 import pytz
 from datetime import datetime
 from discord.ext import commands
-from discord import Interaction, app_commands
+from discord import Embed, Interaction, app_commands
 
+from bot import PoxBot
 import stuff
 import data
 
@@ -14,7 +16,7 @@ from logger import logger
 
 class Silly(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     @app_commands.command(name="say_meow",description="Make me say miaw :3")
     @app_commands.describe(put_face="Enables extra face such as :3")
@@ -60,6 +62,33 @@ class Silly(commands.Cog):
         except Exception as e:
             await ctx.response.send_message(f"err.type=null.error. {e}")
     
+    @app_commands.command(name="annayarik13alt", description=":3 (The image belongs to yarik999.999)")
+    async def cat_annayarik13alt(self, interaction: Interaction):
+        embed = Embed(title="Special thanks to AnnaYarik13Alt", description="He helped me suggesting the commands")
+        embed.set_image(url="attachment://cat.jpg")
+        embed.set_footer(text="Image credit by `yarik999.999`. (AnnaYarik13Alt, i guess)")
+        
+        path = os.path.join(os.path.dirname(__file__), "../resources/cat_anna.jpg")
+
+        with open(path, 'rb') as f:
+            pic = discord.File(f, filename="cat.jpg")
+
+        if embed:
+            await interaction.response.send_message(embed=embed,file=pic)
+    
+    @app_commands.command(name="cat_jard", description="evade")
+    async def cat_jard(self, interaction: Interaction):
+        embed = Embed()
+        embed.set_image(url="attachment://cat.png")
+        
+        path = os.path.join(os.path.dirname(__file__), "../resources/cat_jard.png")
+
+        with open(path, 'rb') as f:
+            pic = discord.File(f, filename="cat.png")
+
+        if embed:
+            await interaction.response.send_message(embed=embed,file=pic)
+
     """
     @commands.hybrid_command(name="freaky_response",description="like a emoji... ahn 🥵")
     @app_commands.describe(by="A member to being freaky to me")

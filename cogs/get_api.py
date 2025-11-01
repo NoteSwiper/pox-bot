@@ -5,17 +5,19 @@ from discord.ext import commands
 import mojang
 
 from roblox import UserNotFound
+import roblox
+import roblox.users
 
 from bot import PoxBot
 
 class GetAPI(commands.Cog):
     def __init__(self, bot: PoxBot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     group = app_commands.Group(name="api", description="Group for API Cog")
 
     minecraft_group = app_commands.Group(name="minecraft", description="Sub-group", parent=group)
-    roblox_group = app_commands.Group(name="roblox", description="Sub-group")
+    #roblox_group = app_commands.Group(name="roblox", description="Sub-group", parent=group)
 
     @minecraft_group.command(name="uuid", description="Converts Username to UUID.")
     async def username_to_uuid(self, interaction: Interaction, username: str):

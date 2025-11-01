@@ -1,4 +1,8 @@
 import string
+import textwrap
+from typing import Optional
+
+import data
 
 def letter_reverser(input: str, decode: bool) -> str:
     alphabet = string.ascii_letters + string.digits
@@ -78,3 +82,50 @@ def decrypt_rail_fence(input, key):
     
     return plain
 
+def morse_code(input: str, decode: bool = False):
+    table = data.morse_code_table
+    if decode:
+        list2 = {}
+        for k,v in table.items():
+            list2[v] = k
+        
+        table = list2
+
+        del list2
+    result = []
+    if not decode:
+        for char in list(input):
+            if char in table.keys():
+                result.append(table[char])
+            elif char == " ":
+                result.append("/")
+            else:
+                continue
+        return " ".join(result)
+    else:
+        for code in input.split(" "):
+            if code in table.keys():
+                result.append(table[code])
+            elif code == "/":
+                result.append(" ")
+            else:
+                continue
+        return "".join(result)
+
+def binary(input: str, decode: bool = False):
+    if decode:
+        clean = "".join(input.split())
+        
+        if len(input) % 8 != 0:
+            clean = clean[:len(clean) - (len(clean) % 8)]
+            if not clean: return ""
+
+        chunks = textwrap.wrap(clean, 8)
+
+        original = ''.join(chr(int(chunk, 2)) for chunk in chunks)
+        return original
+    else:
+        chunks = [format(ord(char), '08b') for char in input]
+
+        return ' '.join(chunks)
+    

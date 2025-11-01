@@ -2,6 +2,7 @@ from typing import Optional
 from discord import Embed, Forbidden, Guild, Interaction, Member, NotFound, app_commands
 from discord.ext.commands import Cog, guild_only
 
+from bot import PoxBot
 from logger import logger
 
 async def get_all_guild_members(guild: Guild):
@@ -53,7 +54,7 @@ async def get_reliable_member(guild: Guild, user_id: int) -> Optional[Member]:
 
 class Leaderboard(Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     group = app_commands.Group(name="leaderboard",description="Leaderboards")
     

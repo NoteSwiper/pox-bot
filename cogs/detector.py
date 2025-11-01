@@ -3,11 +3,12 @@ from typing import Optional
 from discord import Embed, Interaction, Member, User, app_commands
 from discord.ext import commands
 
+from bot import PoxBot
 from stuff import check_map
 
 class Detector(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     detector_group = app_commands.Group(name="detect", description="A group for detector cogs")
     
@@ -85,6 +86,35 @@ class Detector(commands.Cog):
         e = Embed(title=f"Is {custom}?",description=f"{dac}")
         
         await interaction.followup.send(embed=e)
+    
+    @detector_group.command(name="rng_member", description="Selects random members (only real members)")
+    @commands.guild_only()
+    async def random_member_selector(self, interaction: Interaction, max_select: Optional[int]):
+        await interaction.response.defer()
+
+        if interaction.guild is None:
+            await interaction.followup.send("This feature can only be used in Guild-install.")
+            return
+
+        if max_select is None:
+            max_select = 1
+        
+        members = []
+
+        for member in interaction.guild.members:
+            if member.bot: continue
+            members.append(member)
+        
+        random.shuffle(members)
+
+        embed = Embed(title=f"Selected members.")
+        lines = ["Selected members are:"]
+        for i,member in enumerate(members[:max_select]):
+            lines.append(f"{i}. <@{member.id}>")
+        
+        embed.description = "\n".join(lines)
+
+        await interaction.followup.send(embed=embed)
     
 async def setup(bot):
     await bot.add_cog(Detector(bot))

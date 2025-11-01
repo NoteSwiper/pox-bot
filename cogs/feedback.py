@@ -2,9 +2,11 @@ import discord
 from discord.ext.commands import Cog
 from discord import app_commands, Embed, Interaction
 
+from bot import PoxBot
+
 class Feedback(Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
     
     @app_commands.command(name="feedback", description="Feedback.")
     async def feedback(self, interaction: Interaction):

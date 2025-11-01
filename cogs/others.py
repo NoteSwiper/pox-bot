@@ -14,6 +14,7 @@ import os
 
 import profanityfilter
 
+from bot import PoxBot
 import data
 
 null_responses = {
@@ -49,7 +50,7 @@ pf = profanityfilter.ProfanityFilter(extra_censor_list=[
 
 class Others(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: PoxBot = bot
         self.change_status.start()
     
     def cog_unload(self):
