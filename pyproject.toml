@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aioconsole>=0.8.2",
     "aiofiles>=25.1.0",
     "aiosqlite>=0.21.0",
     "discord-py>=2.6.4",

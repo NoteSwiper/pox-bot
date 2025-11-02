@@ -50,7 +50,7 @@ bot = PoxBot(
 tree = bot.tree
 
 
-@app_commands.command(name="reload_cogs", description="Reloads cogs. (not restarting bot)")
+@tree.command(name="reload_cogs", description="Reloads cogs. (not restarting bot)")
 @commands.is_owner()
 async def reload_cogs(interaction: Interaction):
     await interaction.response.defer()

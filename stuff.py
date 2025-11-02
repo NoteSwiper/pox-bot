@@ -549,3 +549,6 @@ def expand_hex(s):
             return s
         else:
             return None
+
+def truncate(text,length=4000):
+    return (text[:length-1]+'…') if len(text) > length else text

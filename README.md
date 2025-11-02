@@ -4,15 +4,7 @@ just an my bot's source code lolol
 
 ## Requirements
 
-```bash
-pip install -r requirements.txt
-```
-
-or 
-
-```bash
-py -m pip install -r requirements.txt
-```
+`uv sync`
 
 ## Usage
 
@@ -20,9 +12,7 @@ Make sure to activate virtualenv first.
 
 Run this command:
 
-```sh
-python main.py
-```
+`uv run main.py`
 
 > [!warning]
 > I'm not responsive for messing the project up.

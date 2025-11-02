@@ -5,6 +5,8 @@ from discord import CustomActivity, app_commands, Interaction, Embed, User, Memb
 from bot import PoxBot
 from thefuzz import process
 
+from stuff import truncate
+
 class SearchIndexMaker(commands.Cog):
     def __init__(self, bot: PoxBot):
         self.bot: PoxBot = bot
@@ -41,6 +43,57 @@ class SearchIndexMaker(commands.Cog):
             await interaction.followup.send("The bot has not connected with Database.")
             return
     
+    @group.command(name="query_count", description="Get query count.")
+    async def query_count(self, interaction: Interaction):
+        await interaction.response.defer(thinking=True)
+
+        if self.bot.db_connection:
+            try:
+                async with self.bot.db_connection.execute("SELECT query FROM custom") as cursor:
+                    all_query = await cursor.fetchall()
+                count = 0
+
+                for query in all_query:
+                    count += 1
+
+                embed = Embed(
+                    title=f"Count of query in Database",
+                    description=f"{count} query in database."
+                )
+
+                await interaction.followup.send(embed=embed)
+            except Exception as e:
+                await interaction.followup.send(f"Failed to process. {e}")
+                return
+        else:
+            await interaction.followup.send("The bot has not connected with Database.")
+            return
+
+    @group.command(name="query_list", description="Get list of query.")
+    async def query_count(self, interaction: Interaction):
+        await interaction.response.defer(thinking=True)
+
+        if self.bot.db_connection:
+            try:
+                async with self.bot.db_connection.execute("SELECT query FROM custom") as cursor:
+                    all_query = await cursor.fetchall()
+                lines = []
+
+                for query in all_query:
+                    lines.append(query[0])
+                embed = Embed(
+                    title=f"Count of query in Database",
+                    description=truncate(", ".join(lines)),
+                )
+
+                await interaction.followup.send(embed=embed)
+            except Exception as e:
+                await interaction.followup.send(f"Failed to process. {e}")
+                return
+        else:
+            await interaction.followup.send("The bot has not connected with Database.")
+            return
+
     @group.command(name="search", description="Search query as fuzzy search")
     async def search_query(self, interaction: Interaction, needle: str):
         await interaction.response.defer(thinking=True)
@@ -52,7 +105,7 @@ class SearchIndexMaker(commands.Cog):
                 
                 desc = []
 
-                data = process.extract(needle, all_query, limit=10)
+                data = process.extract(needle, all_query, limit=24)
 
                 for item in data:
                     desc.append(f"{item[0][0]}: {item[1]}")

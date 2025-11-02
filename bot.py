@@ -6,17 +6,18 @@ import re
 import subprocess
 from time import time
 import uuid
+import aioconsole
 import discord
 from discord.ext import commands
 from gtts.lang import tts_langs
-from cache import Cache
+from classes import Cache
 import stuff
 import data
 import aiosqlite
 import profanityfilter
 import roblox
 from logger import logger, interact_logger
-from discord import Forbidden, HTTPException, Interaction, MissingApplicationID, app_commands
+from discord import Forbidden, HTTPException, Interaction, MissingApplicationID, TextChannel, app_commands
 
 import aiofiles
 import json
@@ -142,7 +143,7 @@ class PoxBot(commands.AutoShardedBot):
             logger.exception("TranslationError: Error occured while translating commands")
         except HTTPException:
             logger.error("HTTPException: Failed to sync commands")
-    
+            
     async def on_message(self,message: discord.Message):
         self.handled_messages += 1
         

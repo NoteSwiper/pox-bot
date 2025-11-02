@@ -48,7 +48,7 @@ class Utility(commands.Cog):
     @app_commands.command(name="8ball", description="Gives a random, classic magic 8-ball response to a user's question.")
     @app_commands.describe(question="Question to answer by 8ball.")
     async def eight_ball(self, interaction: Interaction, question: str):
-        choice = random.choice(data.tyc)
+        choice = random.choice(data.possibility_words)
 
         e = Embed(
             title=f"Question: `{question}`",

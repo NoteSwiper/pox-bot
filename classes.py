@@ -16,4 +16,3 @@ class Cache:
             else:
                 del self.cache[key]
         return None
-    
