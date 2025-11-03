@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Optional
 from discord.ext import commands
-from discord import Activity, ActivityType, CustomActivity, Embed, Forbidden, Game, HTTPException, Interaction, Member, Role, Spotify, Streaming, app_commands
+from discord import Activity, ActivityType, CustomActivity, Embed, Forbidden, Game, HTTPException, Interaction, Member, Role, Spotify, Status, Streaming, app_commands
 
 from bot import PoxBot
 
@@ -35,9 +35,35 @@ class CountsGroup(commands.Cog):
         lines.append("Total: {}".format(members))
         lines.append("Members: {}".format(users))
         lines.append("Bots: {}".format(bots))
-        lines.append("Bot ratio: {}".format((bots / members) * 100))
+        lines.append("Bot ratio: {} %".format(round((bots / members) * 100)))
 
         embed = Embed(title="Server counter: users & extras", description="\n".join(lines))
+
+        await interaction.response.send_message(embed=embed)
+    
+    @group.command(name="online_users", description="Get count of online users.")
+    @commands.guild_only()
+    async def count_online_members(self, interaction: Interaction):
+        if interaction.guild is None: return await interaction.response.send_message("The commands are usable when the bot is in guild.")
+
+        lines = []
+
+        members = [member for member in interaction.guild.members if member.bot is not True]
+
+        online = []
+
+        for member in members:
+            member2 = interaction.guild.get_member(member.id)
+
+            if member2 is not None:
+                if member2.status != Status.invisible or member2.status != Status.offline:
+                    online.append(member2)
+            del member2
+        
+        for on in online:
+            lines.append(f"<@{on.id}>")
+
+        embed = Embed(title="Server counter: online user", description="\n".join(lines))
 
         await interaction.response.send_message(embed=embed)
     

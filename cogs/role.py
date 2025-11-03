@@ -1,6 +1,8 @@
 from re import I
+from typing import Optional
+import discord
 from discord.ext import commands
-from discord import Embed, Forbidden, Interaction, Member, Permissions, Role, app_commands
+from discord import Embed, Forbidden, HTTPException, Interaction, Member, Permissions, Role, app_commands
 
 from bot import PoxBot
 
@@ -134,5 +136,40 @@ class RoleGroup(commands.Cog):
         except Exception as e:
             raise
     
+    @group.command(name="add", description="Adds a role.")
+    async def add_role(self, interaction: Interaction, name: str, members: Optional[commands.Greedy[Member]] = None):
+        if interaction.guild is None: return await interaction.response.send_message("You're using User-mode.")
+
+        await interaction.response.defer(thinking=True)
+
+        try:
+            role = await interaction.guild.create_role(name=name, reason=f"Created by {interaction.user.name} via /role add")
+            return await interaction.followup.send("Successfully created role :3", ephemeral=True)
+        except Forbidden:
+            return await interaction.followup.send("Failed to create role; I do not have permission to add role in guild.")
+        except HTTPException as e:
+            logger.exception(f"HTTPException: {e}")
+            return
+        except Exception as e:
+            logger.exception(f"Uncaught exception: {e}")
+            return
+    
+    @group.command(name="delete", description="Adds a role.")
+    async def delete_role(self, interaction: Interaction, role: Role):
+        if interaction.guild is None: return await interaction.response.send_message("You're using User-mode.")
+
+        await interaction.response.defer(thinking=True)
+
+        try:
+            await role.delete(reason=f"Deleted by {interaction.user.name} via /role delete")
+            return await interaction.followup.send("Successfully deleted role :3", ephemeral=True)
+        except Forbidden:
+            return await interaction.followup.send("Failed to delete role; I do not have permission to delete role in guild.")
+        except HTTPException as e:
+            logger.exception(f"HTTPException: {e}")
+            return
+        except Exception as e:
+            logger.exception(f"Uncaught exception: {e}")
+            return
 async def setup(bot):
     await bot.add_cog(RoleGroup(bot))

@@ -163,7 +163,7 @@ class GiveawayCog(commands.Cog):
 
         embed = Embed(
             title="Giveaway.",
-            description=f"**Prize:** {prize}\n**Winners:** {winners}\n**Ends:** <t:{int(end_timestamp)}:R>\n\nReact with {GIVEAWAYS_EMOJI} to enter."
+            description=f"**Prize:** {prize}\n**Winners:** {winners}\n**Ends:** <t:{int(end_timestamp)}:R>\n\nReact with {GIVEAWAYS_EMOJI} to enter.",
             color=Colour.gold(),
             timestamp=end_time
         )
@@ -172,6 +172,7 @@ class GiveawayCog(commands.Cog):
         channel = interaction.channel or self.bot.get_channel(interaction.channel_id)
         if channel is None: return await interaction.followup.send("Whoops. An error occured.", ephemeral=True)
         message = await channel.send(embed=embed)
+        emjij = await message.add_reaction(GIVEAWAYS_EMOJI)
 
         giveaway_data = {
             'channel_id': interaction.channel_id,

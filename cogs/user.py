@@ -12,7 +12,6 @@ class UserGroup(commands.Cog):
         self.bot: PoxBot = bot
     
     group = app_commands.Group(name="user", description="An group for Members.")
-
     @group.command(name="info", description="Get user's information.")
     @commands.guild_only()
     async def check_user_info(self, interaction: Interaction, member: Member):
@@ -196,6 +195,5 @@ class UserGroup(commands.Cog):
             return
         
         await interaction.followup.send(embed=embed)
-    
 async def setup(bot):
     await bot.add_cog(UserGroup(bot))
