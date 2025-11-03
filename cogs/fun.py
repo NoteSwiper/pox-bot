@@ -1,10 +1,13 @@
 from discord.ext.commands import Cog
-from discord import app_commands, Interaction
+from discord import Member, app_commands, Interaction
 import random
 
 from matplotlib import pyplot as plt
 
 from bot import PoxBot
+
+from logger import logger
+import asyncio
 
 class Fun(Cog):
     def __init__(self, bot):
@@ -90,5 +93,19 @@ class Fun(Cog):
         else:
             await interaction.response.send_message(f"You've not even started the guess.")
 
+    @app_commands.command(name="job_application",description="yeah")
+    async def a_job_message(self, ctx):
+        try:
+            await ctx.response.send_message("Today, I'll be talking about one of humanity's biggest fears.")
+            await asyncio.sleep(2)
+            await ctx.followup.send("# A J*B.")
+        except Exception as e:
+            logger.error(e)
+    
+    @app_commands.command(name="boop_member",description="boops someone")
+    @app_commands.describe(user="Member to boop")
+    async def boop_member(self, ctx: Interaction, user: Member):
+        await ctx.response.send_message(f"<@{user.id}> boop.")
+    
 async def setup(bot):
     await bot.add_cog(Fun(bot))

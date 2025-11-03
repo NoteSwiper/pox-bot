@@ -9,6 +9,8 @@ import pytz
 
 from bot import PoxBot
 from stuff import get_formatted_from_seconds
+import stuff
+
 
 class Info(commands.Cog):
     def __init__(self, bot):
@@ -16,6 +18,22 @@ class Info(commands.Cog):
     
     group = app_commands.Group(name="info", description="Informations.")
 
+    @group.command(name="sync_commands", description="syncs command if panic mode")
+    @commands.is_owner()
+    @commands.guild_only()
+    async def sync_commands(self,ctx: Interaction):
+        if ctx.guild:
+            self.bot.tree.clear_commands(guild=ctx.guild)
+            await self.bot.tree.sync(guild=ctx.guild)
+            await ctx.response.send_message("Commands have been synced.")
+        else:
+            await ctx.response.send_message("This command can only be used in a server.")
+    
+    @group.command(name="uptime", description="How long this bot is in f**king session")
+    async def check_uptime(self,ctx: Interaction):
+        global start_time
+        await ctx.response.send_message("I have been online for {}.".format(stuff.get_formatted_from_seconds(round(time.time() - self.bot.launch_time2))))
+    
     @group.command(name="botinfo", description="I always with you :)")
     async def script_info(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
@@ -93,7 +111,7 @@ class Info(commands.Cog):
         
         await interaction.followup.send(embed=e)
 
-    @app_commands.command(name="pox",description="Say him 'p0x38 is retroslop >:3'")
+    @group.command(name="pox",description="Say him 'p0x38 is retroslop >:3'")
     async def pox_message(self, ctx: discord.Interaction):
         await ctx.response.defer()
         await ctx.followup.send("p0x38 is retroslop.")
@@ -111,5 +129,27 @@ class Info(commands.Cog):
 
         await interaction.followup.send(f"{self.bot.name_signature}; {self.bot.session_uuid}")
 
+    @group.command(name="school_date",description="Check if owner of the bot is in school")
+    async def check_if_pox_is_school_day(self,ctx):
+        await ctx.response.send_message(f"Pox is {"in school day." if stuff.is_weekday(datetime.now(pytz.timezone("Asia/Tokyo"))) else "not in school day."}")
+    
+    @group.command(name="active",description="Check if owner of the bot is active")
+    async def is_pox_active(self, ctx: Interaction):
+        now = datetime.now(pytz.timezone('Asia/Tokyo'))
+        isWeekday = stuff.is_weekday(now)
+        isFaster = stuff.is_specificweek(now,2) or stuff.is_specificweek(now,4)
+        isInSchool = stuff.is_within_hour(now,7,16) if isWeekday and not isFaster else (stuff.is_within_hour(now,7,15) if isWeekday and isFaster else False)
+        isSleeping = stuff.is_sleeping(now,23,7) if isWeekday else stuff.is_within_hour(now,2,12)
+        status = ""
+        
+        if isInSchool:
+            status = "Pox is in school."
+        elif isSleeping:
+            status = "Pox is sleeping."
+        else:
+            status = "Pox is sometime active."
+        
+        await ctx.response.send_message(f"{status}\nMay the result varies by the time, cuz it is very advanced to do... also this is not accurate.")
+        
 async def setup(bot):
     await bot.add_cog(Info(bot))

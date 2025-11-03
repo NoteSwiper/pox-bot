@@ -1,5 +1,8 @@
 import re
 
+with open("emoticons.txt", 'r', encoding="utf-8") as f:
+    emoticons = f.read().split("\n")
+
 possible_map = {
     1: "Nuh uh.",
     2: "Nah.",
@@ -179,65 +182,6 @@ AI_RESPONSE_UNABLE = [
     "cannot assist with that",
     "cannot answer that",
     "not able to do that"
-]
-
-emoticons = [
-    ":)",
-    ":]",
-    "=)",
-    "=]",
-    ":D",
-    "=D",
-    "=3",
-    "C:",
-    "XD",
-    ":(",
-    ":C",
-    ":[",
-    ";(",
-    ":'(",
-    ":')",
-    ":'D",
-    ">:(",
-    ">:[",
-    "D':",
-    "D:<",
-    "D:",
-    "D;",
-    "DX",
-    "D=",
-    ":O",
-    ":o",
-    ":0",
-    ">:O",
-    "=O",
-    "=o",
-    "=0",
-    ":3",
-    ";3",
-    "=3",
-    "X3",
-    ">:3",
-    "3:",
-    "3:<",
-    ":x",
-    ";]",
-    ";D",
-    ":P",
-    "XP",
-    "=P",
-    ">:b",
-    ":/",
-    ">:\\",
-    ">:/",
-    ":\\",
-    "=/",
-    "=\\",
-    ":|",
-    "://)",
-    "://3",
-    ":#",
-    ">:)",
 ]
 
 msg_ssoa = [

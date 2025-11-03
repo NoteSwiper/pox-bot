@@ -290,24 +290,6 @@ class Checker(commands.Cog):
         
         await interaction.followup.send(embed=embed)
     
-    @checker_group.command(name="list", description="Returns total members")
-    @commands.guild_only()
-    async def get_list_members(self, interaction: Interaction):
-        await interaction.response.defer(thinking=True)
-        embed = Embed(title="Mmembers in this server",description="")
-        
-        if interaction.guild:
-            embed.description = '\n'.join([
-                m.name
-                for m in interaction.guild.members
-            ])
-        else:
-            embed.description = "You're not in guild."
-            await interaction.followup.send(embed=embed)
-            return
-        
-        await interaction.followup.send(embed=embed)
-    
     @checker_group.command(name="count", description="Returns total members")
     @commands.guild_only()
     async def get_total_members(self, interaction: Interaction):
@@ -355,15 +337,5 @@ class Checker(commands.Cog):
 
         await interaction.followup.send(embed=e)
     
-    @checker_group.command(name="avatar", description="Shows user's guild PFP.")
-    @commands.guild_only()
-    async def get_user_profile_picture(self, interaction: Interaction, member: Member):
-        await interaction.response.defer()
-
-        embed = Embed(title=f"{member.display_name}'s Avatar.")
-        embed.set_image(url=member.display_avatar.url if member.display_avatar else member.default_avatar.url)
-
-        await interaction.followup.send(embed=embed)
-
 async def setup(bot):
     await bot.add_cog(Checker(bot))
