@@ -63,7 +63,7 @@ class PoxBot(commands.AutoShardedBot):
         logger.debug("Database initialized")
 
         try:
-            async with aiofiles.open('resources/blacklisted_words.json', 'r+') as f:
+            async with aiofiles.open('data/blacklisted_words.json', 'r+') as f:
                 content = await f.read()
                 self.blacklisted_words = json.loads(content)
                 logger.debug(self.blacklisted_words)
@@ -74,7 +74,7 @@ class PoxBot(commands.AutoShardedBot):
             self.blacklisted_words = {}
 
         try:
-            async with aiofiles.open('resources/server_data.json', 'r+') as f:
+            async with aiofiles.open('data/server_data.json', 'r+') as f:
                 content = await f.read()
                 self.servers_data = json.loads(content)
                 logger.debug(self.servers_data)
@@ -83,7 +83,7 @@ class PoxBot(commands.AutoShardedBot):
         except json.JSONDecodeError:
             logger.error("server_data.json is empty or invalid.")
             self.servers_data = {}
-
+        """
         try:
             if self.custom_activity is not None:
                 with open(self.custom_activity, 'r') as f:
@@ -93,7 +93,7 @@ class PoxBot(commands.AutoShardedBot):
                     self.activity_messages = f.read().splitlines()
         except Exception as e:
             logger.exception(f"Error occured while trying to get activity message list: {e}")
-        
+        """
         try:
             output = subprocess.run(['git','rev-parse','--short','HEAD'], capture_output=True, text=True, check=True)
             self.commit_hash = output.stdout.strip()
@@ -294,10 +294,10 @@ class PoxBot(commands.AutoShardedBot):
     
 
     async def close(self) -> None:
-        async with aiofiles.open("resources/blacklisted_words.json", 'w+') as f:
+        async with aiofiles.open("data/blacklisted_words.json", 'w+') as f:
             await f.write(json.dumps(self.blacklisted_words, indent=4))
         
-        async with aiofiles.open("resources/server_data.json", 'w+') as f:
+        async with aiofiles.open("data/server_data.json", 'w+') as f:
             await f.write(json.dumps(self.servers_data, indent=4))
 
         if self.db_connection:

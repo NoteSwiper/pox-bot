@@ -137,7 +137,7 @@ class RoleGroup(commands.Cog):
             raise
     
     @group.command(name="add", description="Adds a role.")
-    async def add_role(self, interaction: Interaction, name: str, members: Optional[commands.Greedy[Member]] = None):
+    async def add_role(self, interaction: Interaction, name: str):
         if interaction.guild is None: return await interaction.response.send_message("You're using User-mode.")
 
         await interaction.response.defer(thinking=True)

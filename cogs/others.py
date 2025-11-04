@@ -51,11 +51,6 @@ pf = profanityfilter.ProfanityFilter(extra_censor_list=[
 class Others(commands.Cog):
     def __init__(self, bot):
         self.bot: PoxBot = bot
-        self.change_status.start()
-    
-    def cog_unload(self):
-        self.change_status.cancel()
-        return super().cog_unload()
     
     nullgroup = app_commands.Group(name="null",description=":)")
     
@@ -124,14 +119,6 @@ class Others(commands.Cog):
         e.description = "\n".join(choosen1)
 
         await interaction.followup.send(embed=e)
-    
-    @tasks.loop(seconds=60.0)
-    async def change_status(self):
-        new_status = random.choice(self.bot.activity_messages)
-        
-        await self.bot.change_presence(
-            activity=CustomActivity(name=new_status)
-        )
-    
+
 async def setup(bot):
     await bot.add_cog(Others(bot))

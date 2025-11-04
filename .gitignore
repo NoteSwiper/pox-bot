@@ -227,7 +227,9 @@ pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,visualstudiocode,python,venv,virtualenv,dotenv
 
+logs/
 voices/
+data/
 voices
 voices/*
 *.db

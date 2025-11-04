@@ -39,6 +39,12 @@ class RandomGroup(commands.Cog):
 
         return await interaction.response.send_message(embed=embed)
     
+    @group.command(name="fixed_number", description="Returns fixed number of user.")
+    async def get_user_fixed_number(self, interaction: Interaction, member: Member):
+        if interaction.guild is None: return await interaction.response.send_message("The command only can be runned when the bot is installed in server(s).")
+
+        return await interaction.response.send_message(abs(hash(member.name)) % 9999999999)
+
     @group.command(name="role", description="Returns random role(s).")
     async def random_role(self, interaction: Interaction, max_selections: Optional[int] = 1):
         if interaction.guild is None: return await interaction.response.send_message("The command only can be runned when the bot is installed in server(s).")
