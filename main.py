@@ -53,6 +53,8 @@ tree = bot.tree
 @tree.command(name="reload_cogs", description="Reloads cogs. (not restarting bot)")
 @commands.is_owner()
 async def reload_cogs(interaction: Interaction):
+    loaded_extension = 0
+    failed_extension = 0
     await interaction.response.defer()
     for fname in os.listdir('./cogs'):
         if fname.endswith('.py'):
@@ -61,19 +63,27 @@ async def reload_cogs(interaction: Interaction):
             try:
                 await bot.reload_extension(f"cogs.{fname[:-3]}")
                 logger.debug(f"Successfully loaded {fname[:-3]}.")
+                loaded_extension += 1
             except commands.ExtensionNotLoaded as e:
                 logger.exception(f"Extension {fname[:-3]} was not loaded due to {e}.")
+                failed_extension += 1
             except commands.ExtensionNotFound:
                 logger.exception(f"Extension {fname[:-3]} was not found from cogs folder.")
+                failed_extension += 1
             except commands.NoEntryPointError:
                 logger.exception(f"Extension {fname[:-3]} has no entrypoint to load.")
+                failed_extension += 1
             except commands.ExtensionFailed as e:
                 logger.exception(f"Extension {fname[:-3]} has failed to load due to {e}.")
+                failed_extension += 1
             except Exception as e:
                 logger.exception(f"Uncaught exception thrown while reloading, due to {e}.")
+                failed_extension += 1
     
     try:
-        await bot.tree.sync()
+        synched = await bot.tree.sync()
+        logger.info(f"Synchronized {len(synched)} commands, with {loaded_extension} loaded extensions and {failed_extension} failed.")
+        return await interaction.followup.send(f"Synchronized {len(synched)} commands, with {loaded_extension} loaded extensions and {failed_extension} failed.")
     except app_commands.CommandSyncFailure:
         logger.exception("CommandSyncFailure: Invalid command data")
         return await interaction.followup.send("Failed to sync commands. It seems some commands has invalid data.")
@@ -90,9 +100,6 @@ async def reload_cogs(interaction: Interaction):
     except HTTPException:
         logger.error("HTTPException: Failed to sync commands")
         return await interaction.followup.send("Failed to sync commands.")
-    
-    return await interaction.followup.send("Successfully reloaded cogs and synchronized commands to discord.")
-
 session_uuid = uuid.uuid4()
 
 last_interaction = datetime.now(UTC)

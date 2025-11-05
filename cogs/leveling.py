@@ -54,7 +54,7 @@ class XPSystem(commands.Cog):
         return self.user_data
 
     async def _save_user_data(self):
-        if not self.is_loaded:
+        if self.is_loaded != True:
             logger.warning("Data not loaded yet. skipping save.")
             return
         
@@ -83,7 +83,7 @@ class XPSystem(commands.Cog):
     def get_required_xp_to_level_up(self, current: int):
         return (5 * (current ** 2)) + (50 * current) + 100
     
-    async def check_level_up(self, user_id, channel, user_record):
+    async def check_level_up(self, user_id, channel, guild_id, user_record):
         xp = user_record['xp']
         level = user_record['level']
 
@@ -102,11 +102,12 @@ class XPSystem(commands.Cog):
                 user_record['xp'] = xp
                 await self.save_user_data()
 
-                user = self.bot.get_user(user_id)
-                if user:
-                    await channel.send(
-                        f"{user.mention} has leveled up to {level}."
-                    )
+                if self.bot.servers_data[str(guild_id)]['enable_level_notify'] == True:
+                    user = self.bot.get_user(user_id)
+                    if user:
+                        await channel.send(
+                            f"{user.mention} has leveled up to {level}."
+                        )
 
                 continue
             else:
@@ -124,11 +125,11 @@ class XPSystem(commands.Cog):
         current_time = time.time()
 
         if current_time - user_record["last_xp_gain"] >= self.XP_COOLDOWN:
-            user_record["xp"] += self.XP_PER_MESSAGE
+            user_record["xp"] += int(self.XP_PER_MESSAGE * (len(message.content) / 32))
             user_record["last_xp_gain"] = current_time
             await self.save_user_data()
 
-            await self.check_level_up(user_id, message.channel, user_record)
+            await self.check_level_up(user_id, message.channel, message.guild.id, user_record)
     
     @group.command(name="info", description="Shows info of points for user.")
     async def rank(self, interaction: Interaction, member: Optional[Member] = None):

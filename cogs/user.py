@@ -1,11 +1,42 @@
 from datetime import timedelta
 from typing import Optional
 from discord.ext import commands
-from discord import Activity, ActivityType, CustomActivity, Embed, Forbidden, Game, HTTPException, Interaction, Member, Role, Spotify, Streaming, app_commands
+from discord import Activity, ActivityType, ClientStatus, CustomActivity, Embed, Forbidden, Game, HTTPException, Interaction, Member, Role, Spotify, Status, Streaming, app_commands
 
 from bot import PoxBot
 
 from logger import logger
+
+def format_status(client_status: ClientStatus):
+    result = ""
+    if isinstance(client_status.status, Status):
+        status = client_status.status
+
+        if status.name in ("dnd", "do_not_disturb"):
+            result = "Do not Disturb"
+        elif status.name in ("invisible", "offline"):
+            result = "Offline"
+        elif status.name == "idle":
+            result = "Idle"
+        elif status.name == "online":
+            result = "Online"
+        else:
+            result = "Unknown"
+    elif isinstance(client_status.status, str):
+        result = client_status.status
+    elif client_status.raw_status.strip() is not None:
+        result = client_status.raw_status
+    
+    platforms = []
+
+    if client_status.mobile is str: platforms.append("Mobile")
+    if client_status.desktop is str: platforms.append("Desktop")
+    if client_status.web is str: platforms.append("Website")
+
+    if platforms:
+        result = result + f" ({", ".join(platforms)})"
+
+    return result
 
 class UserGroup(commands.Cog):
     def __init__(self, bot):
@@ -20,17 +51,17 @@ class UserGroup(commands.Cog):
             if interaction.guild:
                 user = interaction.guild.get_member(member.id)
                 if user:
-                    roles = [f"{role.name}" for role in user.roles if role.name != "@everyone"]
+                    roles = [role for role in user.roles if role.name != "@everyone"]
                     temp1 = {
                         'User ID': user.id,
-                        'Name': user.display_name,
-                        'Bot': "True" if user.bot else "False",
-                        'Created on': user.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                        'Highest role': f"{user.top_role.name}",
-                        'Status': user.raw_status,
-                        'Nitro since': user.premium_since.strftime("%Y-%m-%d %H:%M:%S") if user.premium_since else "It's non-nitro user.",
-                        'Joined at': user.joined_at.strftime("%Y-%m-%d %H:%M:%S") if user.joined_at else "Cannot find the date when this bro joined.",
-                        'Roles': ", ".join(roles)
+                        'Name': f"`{user.display_name}`",
+                        'Is Bot': "Yes" if user.bot else "No",
+                        'Created on': user.created_at.strftime("%Y-%m-%d %H:%M:%S") + f" (<t:{int(user.created_at.timestamp())}:R>)",
+                        'Highest role': f"<@&{user.top_role.id}>",
+                        'Status': format_status(user.client_status),
+                        'Nitro since': user.premium_since.strftime("%Y-%m-%d %H:%M:%S") if user.premium_since else "non-Nitro User",
+                        'Joined at': user.joined_at.strftime("%Y-%m-%d %H:%M:%S") + f" (<t:{int(user.joined_at.timestamp())}:R>)" if user.joined_at else "Cannot find the date when this bro joined.",
+                        'Roles': ", ".join([f"<@&{role.id}>" for role in roles]),
                     }
 
                     if user.activities:
@@ -72,7 +103,7 @@ class UserGroup(commands.Cog):
                     lines = []
 
                     for key,value in temp1.items():
-                        lines.append(f"{key}: `{value}`")
+                        lines.append(f"{key}: {value}")
 
                     if user.display_avatar:
                         e.set_thumbnail(url=user.display_avatar.url)

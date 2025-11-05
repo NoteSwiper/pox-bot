@@ -12,7 +12,6 @@ class Checker(commands.Cog):
     
     checker_group = app_commands.Group(name="check",description="group for checker cog")
     
-
     @checker_group.command(name="server", description="checks current server information")
     @commands.guild_only()
     async def check_server_info(self, interaction: Interaction):

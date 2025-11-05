@@ -50,9 +50,11 @@ class Info(commands.Cog):
             'Total interactions': f"{self.bot.processed_interactions} / {self.bot.failed_interactions}",
             'Total Guilds': len(self.bot.guilds),
             'Total Chunks': len(self.bot.cached_messages),
-            'Latency (ms)': round(self.bot.latency*100000)/100,
+            'Total Cached': f"{self.bot.cache.get_count()}",
+            'Latency (ms)': round(self.bot.latency*100)/100,
             'Shards': len(self.bot.shards if not self.bot.shards is None else "Standalone"),
-            'Developer': "p0x38 (NoteSwiper)"
+            'Developer': "p0x38 (NoteSwiper)",
+            'I can see': str(len(self.bot.users)) + " users",
         }
         
         if platform.system() == "Linux":
@@ -101,7 +103,7 @@ class Info(commands.Cog):
         await interaction.response.defer()
         e = Embed(title="Pong!")
         rows_to_add = {
-            'Latency (ms)': {round(self.bot.latency*100000)/100},
+            'Latency (ms)': {round(self.bot.latency*100)/100},
             'Shard ID': {self.bot.shard_id or "Standalone"},
             'Shards': {self.bot.shard_count or "Standalone"}
 		}

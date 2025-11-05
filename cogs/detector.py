@@ -21,6 +21,7 @@ class Detector(commands.Cog):
         dac = check_map()
         
         e = Embed(title=f"Is {member.name} gay?",description=f"{dac}")
+        e.set_footer(text="Don't take the results too seriously.")
         
         await interaction.followup.send(embed=e)
     
@@ -33,6 +34,7 @@ class Detector(commands.Cog):
         dac = check_map()
         
         e = Embed(title=f"Is {member.name} femboy?",description=f"{dac}")
+        e.set_footer(text="Don't take the results too seriously.")
         
         await interaction.followup.send(embed=e)
     
@@ -45,6 +47,7 @@ class Detector(commands.Cog):
         dac = check_map()
         
         e = Embed(title=f"Is {member.name} freaky?",description=f"{dac}")
+        e.set_footer(text="Don't take the results too seriously.")
         
         await interaction.followup.send(embed=e)
     
@@ -62,6 +65,7 @@ class Detector(commands.Cog):
         rand = round(random.randrange(0,100))
         
         e = Embed(title=f"How much {member.name} is vibing", description=f"He is {rand}% vibing.")
+        e.set_footer(text="Don't take the results too seriously.")
         await interaction.followup.send(embed=e)
     
     @detector_group.command(name="custom", description="Check if member is something specified in command")
@@ -73,6 +77,7 @@ class Detector(commands.Cog):
         dac = check_map()
         
         e = Embed(title=f"Is {member.name} {custom}?",description=f"{dac}")
+        e.set_footer(text="Don't take the results too seriously.")
         
         await interaction.followup.send(embed=e)
         
@@ -84,6 +89,7 @@ class Detector(commands.Cog):
         dac = check_map()
         
         e = Embed(title=f"Is {custom}?",description=f"{dac}")
+        e.set_footer(text="Don't take the results too seriously.")
         
         await interaction.followup.send(embed=e)
     

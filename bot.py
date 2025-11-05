@@ -52,7 +52,8 @@ class PoxBot(commands.AutoShardedBot):
         self.servers_data = {}
         self.root_path = os.path.dirname(os.path.abspath(__file__))
         self.available_togglers = [
-            "delete_message_with_swears"
+            "delete_message_with_swears",
+            "enable_level_notify",
         ]
         self.custom_activity = os.path.join(self.root_path, "resources/what_2.txt")
 
@@ -132,7 +133,8 @@ class PoxBot(commands.AutoShardedBot):
             logger.info("It seems client is connected with bot, but no user object found.")
 
         try:
-            await self.tree.sync()
+            synced = await self.tree.sync()
+            logger.info(f"Synchronized {len(synced)} commands.")
         except app_commands.CommandSyncFailure:
             logger.exception("CommandSyncFailure: Invalid command data")
         except Forbidden:
