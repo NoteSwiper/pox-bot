@@ -24,6 +24,19 @@ class Detector(commands.Cog):
         e.set_footer(text="Don't take the results too seriously.")
         
         await interaction.followup.send(embed=e)
+        
+    @detector_group.command(name="retroslop", description="Check if member is retroslop")
+    @app_commands.describe(member="Member to check")
+    async def gay_detector(self, interaction: Interaction, member: Member):
+        await interaction.response.defer(thinking=True)
+        #randum = int(random.random()*100)
+        #dac = check_map(randum,100)
+        dac = check_map()
+        
+        e = Embed(title=f"Is {member.name} retroslop?",description=f"{dac}")
+        e.set_footer(text="Don't take the results too seriously.")
+        
+        await interaction.followup.send(embed=e)
     
     @detector_group.command(name="femboy", description="Check if member is femboy")
     @app_commands.describe(member="Member to check")
@@ -94,7 +107,7 @@ class Detector(commands.Cog):
         await interaction.followup.send(embed=e)
     
     @detector_group.command(name="rng_member", description="Selects random members (only real members)")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def random_member_selector(self, interaction: Interaction, max_select: Optional[int]):
         await interaction.response.defer()
 

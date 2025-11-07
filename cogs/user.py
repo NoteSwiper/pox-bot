@@ -44,7 +44,7 @@ class UserGroup(commands.Cog):
     
     group = app_commands.Group(name="user", description="An group for Members.")
     @group.command(name="info", description="Get user's information.")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def check_user_info(self, interaction: Interaction, member: Member):
         await interaction.response.defer(thinking=True)
         try:
@@ -123,7 +123,7 @@ class UserGroup(commands.Cog):
     
     
     @group.command(name="avatar", description="Display user's avatar in discord.")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def get_user_avatar(self, interaction: Interaction, member: Member):
         await interaction.response.defer()
 
@@ -133,10 +133,10 @@ class UserGroup(commands.Cog):
         await interaction.followup.send(embed=embed)
     
     @group.command(name="kick", description="Kick a member.")
-    @commands.has_permissions(kick_members=True)
+    @app_commands.checks.has_permissions(kick_members=True)
     @app_commands.describe(member="Member to kick.")
     @app_commands.describe(reason="Reason for member to give in DM.")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def kick(self, interaction: Interaction, member: Member, reason: Optional[str] = None):
         await interaction.response.defer()
         e = Embed(title="Status")
@@ -155,10 +155,10 @@ class UserGroup(commands.Cog):
             await interaction.followup.send(embed=e)
     
     @group.command(name="ban", description="Bans member from the server")
-    @commands.has_permissions(ban_members=True)
+    @app_commands.checks.has_permissions(ban_members=True)
     @app_commands.describe(member="Member to ban")
     @app_commands.describe(reason="Reason to ban")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def ban_member(self, ctx: Interaction, member: Member, *, reason: str = ""):
         try:
             await member.ban(reason=reason)
@@ -168,9 +168,9 @@ class UserGroup(commands.Cog):
             await ctx.response.send_message(f"Failed to ban. {e}", ephemeral=True)
     
     @group.command(name="unban", description="Unbans member")
-    @commands.has_permissions(ban_members=True)
+    @app_commands.checks.has_permissions(ban_members=True)
     @app_commands.describe(member="Member to unban")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def unban_member(self, ctx: Interaction, member: Member):
         try:
             await member.unban()
@@ -179,10 +179,10 @@ class UserGroup(commands.Cog):
             await ctx.response.send_message(f"Failed to unban. {e}", ephemeral=True)
     
     @group.command(name="warn", description="Warns member")
-    @commands.has_permissions(moderate_members=True)
+    @app_commands.checks.has_permissions(moderate_members=True)
     @app_commands.describe(member="Member to warn")
     @app_commands.describe(reason="Reason to warn")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def warn_member(self, ctx: Interaction, member: Member, *, reason: str = ""):
         try:
             await member.send(f"You're warned by {ctx.user.name}.\n\nReason: `{reason}`")
@@ -192,25 +192,25 @@ class UserGroup(commands.Cog):
             logger.error(f"Exception occured. {e}")
     
     @group.command(name="timeout", description="Warns member")
-    @commands.has_permissions(moderate_members=True)
+    @app_commands.checks.has_permissions(moderate_members=True)
     @app_commands.describe(member="Member to time-out")
     @app_commands.describe(reason="Reason to time-out")
     @app_commands.describe(length="Length of time-out (minutes)")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def timeout_member(self, ctx: Interaction, member: Member, reason: str = '', length: int = 1):
         await member.timeout(timedelta(minutes=length), reason=f"You're timed out. \"{reason if reason else "No reason provided from source"}\", Requested by {ctx.user.name}")
         await ctx.response.send_message(f"Timed out {member.mention} for {length} minutes.")
     
     @group.command(name="untimeout", description="Un-timeout member")
-    @commands.has_permissions(moderate_members=True)
+    @app_commands.checks.has_permissions(moderate_members=True)
     @app_commands.describe(member="Member to remove timeout")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def untimeout_member(self, ctx: Interaction, member: Member):
         await member.edit(timed_out_until=None)
         await ctx.response.send_message(f"Took the timeout for {member.mention}.")
 
     @group.command(name="list", description="Returns total members")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def get_list_members(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         embed = Embed(title="Mmembers in this server",description="")
@@ -226,5 +226,15 @@ class UserGroup(commands.Cog):
             return
         
         await interaction.followup.send(embed=embed)
+    
+    @group.command(name="nick", description="Sets user's nickname")
+    @app_commands.guild_only()
+    async def change_nickname(self, interaction: Interaction, member: Member, new_nick: Optional[str] = None):
+        if new_nick is None:
+            await member.edit(nick=None, reason=f"Nickname removed by {interaction.user.name}")
+            return await interaction.response.send_message(f"Removed {member.name}'s Nickname.")
+        else:
+            await member.edit(nick=new_nick, reason=f"Nickname changed by {interaction.user.name} via /user nick")
+            return await interaction.response.send_message(f"Changed {member.name}'s Nickname to **{new_nick}**.")
 async def setup(bot):
     await bot.add_cog(UserGroup(bot))

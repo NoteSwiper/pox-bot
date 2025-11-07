@@ -1,19 +1,43 @@
 from datetime import timedelta
 from enum import Enum
+import random
+import string
 import time
 import os
 from typing import Optional
 import discord
 from discord.ext import commands
-from discord import Forbidden, Interaction, TextChannel, app_commands
+from discord import Forbidden, Interaction, Member, SelectOption, TextChannel, TextStyle, app_commands
 from bot import PoxBot
 import data
 from logger import logger
 import stuff
 
-class SpeakEngineType(Enum):
-    GOOGLE = 0
-    ESPEAK = 1
+class DMSendModal(discord.ui.Modal):
+    def __init__(self, enable_sent_by: bool|None, member) -> None:
+        super().__init__(title="Send DM to member", timeout=None, custom_id="dm-sender-modal")
+
+        self.member = member
+        #self.member = discord.ui.UserSelect(placeholder="Choose a member...", max_values=1, custom_id="unique_member_selector", required=True)
+        self.text_to_send = discord.ui.TextInput(label="Text to send", style=TextStyle.paragraph, required=True)
+        self.enable_sent_by = enable_sent_by
+
+        #self.add_item(self.member)
+        self.add_item(self.text_to_send)
+    
+    async def on_submit(self, interaction: Interaction):
+        try:
+            combine = [self.text_to_send.value]
+            sent_by_text = self.enable_sent_by
+            if self.member.id == 1321324137850994758: combine.append(f"Sent by `{interaction.user.name}` with sent_by_text is {sent_by_text}.")
+            elif sent_by_text == True: combine.append(f"\nSent by `{interaction.user.name}`.")
+            #combine.append(f"\nUID: `{''.join(random.choices(string.ascii_letters + string.digits, k=24))}`")
+            await self.member.send("\n".join(combine))
+            if self.member.id == 1321324137850994758 and sent_by_text == False: await interaction.response.send_message(f"Your message sent as DM, but you cannot disable the sent_by_text for DM that directs to Creator of the bot, due to security issue.")
+            else: await interaction.response.send_message(f"Your message sent as DM.", ephemeral=True)
+        except Exception as e:
+            await interaction.response.send_message(f"Failed to send DM. {e}", ephemeral=True)
+            logger.error(f"Error. {e}")
 
 class MessageGroup(commands.Cog):
     def __init__(self, bot):
@@ -22,7 +46,7 @@ class MessageGroup(commands.Cog):
     group = app_commands.Group(name="message", description="An group for messages.")
 
     @group.command(name="send", description="Sends a message.")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def send_message(self, interaction: Interaction, channel: TextChannel, message: str):
         try:
             await channel.send(f"{message}\nSent by {interaction.user.name}")
@@ -33,8 +57,8 @@ class MessageGroup(commands.Cog):
 
     @group.command(name="mass_delete",description="Deletes messages before specified messages.")
     @app_commands.describe(limit="How much range bot will delete.")
-    @commands.has_permissions(manage_channels=True, manage_messages=True)
-    @commands.guild_only()
+    @app_commands.checks.has_permissions(manage_channels=True, manage_messages=True)
+    @app_commands.guild_only()
     async def mass_delete_messages(self, interaction: Interaction, limit: Optional[int] = 100):
         await interaction.response.defer()
         
@@ -50,8 +74,8 @@ class MessageGroup(commands.Cog):
             await interaction.followup.send(f"Deleted {limit} messages.")
     
     @group.command(name="purge", description="Purges a specific amount of messages sent earlier.")
-    @commands.has_permissions(manage_messages=True)
-    @commands.guild_only()
+    @app_commands.checks.has_permissions(manage_messages=True)
+    @app_commands.guild_only()
     async def purge_messages(self, interaction: Interaction, limit: Optional[int] = 100):
         await interaction.response.defer()
 
@@ -66,9 +90,9 @@ class MessageGroup(commands.Cog):
 
     @group.command(name="delete_botmessages",description="Deletes bot's messages")
     @app_commands.describe(limit="How much bot deletes it")
-    @commands.has_permissions(manage_channels=True, manage_messages=True)
-    @commands.is_owner()
-    @commands.guild_only()
+    @app_commands.checks.has_permissions(manage_channels=True, manage_messages=True)
+    @app_commands.check(stuff.is_bot_owner)
+    @app_commands.guild_only()
     async def delete_messages_sent_by_bot(self, ctx: Interaction, limit: int = 100):
         await ctx.response.defer()
         
@@ -98,17 +122,10 @@ class MessageGroup(commands.Cog):
         await ctx.response.send_message(f"{stuff.to_uwu(msg)}")
     
     @group.command(name="dm",description="DMs to a member")
-    @commands.has_permissions(manage_permissions=True,manage_messages=True)
-    @app_commands.describe(member="Member to send")
-    @app_commands.describe(text="Text to send")
-    @commands.guild_only()
-    async def send_dm_to_member(self, ctx: Interaction, member: discord.Member, *, text: str):
-        try:
-            await member.send(f"{text}\n\nSent by {ctx.user.name}!")
-            await ctx.response.send_message(f"Your message sent as DM.", ephemeral=True)
-        except Exception as e:
-            await ctx.response.send_message(f"Failed to send DM. {e}", ephemeral=True)
-            logger.error(f"Error. {e}")
+    @app_commands.checks.has_permissions(send_messages=True)
+    @app_commands.guild_only()
+    async def send_dm_to_member(self, ctx: Interaction, member: Member, enable_sent_by: Optional[bool]):
+        return await ctx.response.send_modal(DMSendModal(enable_sent_by, member))
     
 async def setup(bot):
     await bot.add_cog(MessageGroup(bot))

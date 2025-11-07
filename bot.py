@@ -10,7 +10,7 @@ import aioconsole
 import discord
 from discord.ext import commands
 from gtts.lang import tts_langs
-from classes import Cache
+from classes import Cache, EmoticonGenerator
 import stuff
 import data
 import aiosqlite
@@ -54,9 +54,15 @@ class PoxBot(commands.AutoShardedBot):
         self.available_togglers = [
             "delete_message_with_swears",
             "enable_level_notify",
+            "anti_spam_message",
+            "enable_bot_predefined_autoreply"
         ]
+        self.spam_time_window = 5
+        self.max_messages_per_window = 5
+        self.user_message_timestamps = {}
+        self.emoticon_generator = EmoticonGenerator()
         self.custom_activity = os.path.join(self.root_path, "resources/what_2.txt")
-
+    
     async def setup_hook(self):
         stuff.setup_database("./leaderboard.db")
         
@@ -127,7 +133,8 @@ class PoxBot(commands.AutoShardedBot):
                 "The client is logged into a bot!",
                 f"User ID: {self.user.id}",
                 f"Username: {self.user.name}",
-                f"Connected Guilds: {len(self.guilds)}"
+                f"Connected Guilds: {len(self.guilds)}",
+                f"Guilds: {", ".join([guild.name for guild in self.guilds])}"
             )))
         else:
             logger.info("It seems client is connected with bot, but no user object found.")
@@ -170,6 +177,28 @@ class PoxBot(commands.AutoShardedBot):
                     if data.filter_pattern.search(content) and is_author_lower and has_permission:
                         logger.debug(f"Blacklisted word has found from message; deleting")
                         await message.delete()
+                if self.servers_data[str(message.guild.id)]['anti_spam_message'] == True:
+                    user_id = message.author.id
+                    current_time = time()
+        
+                    if user_id not in self.user_message_timestamps:
+                        self.user_message_timestamps[user_id] = []
+                    
+                    self.user_message_timestamps[user_id].append(current_time)
+        
+                    self.user_message_timestamps[user_id] = [
+                        t for t in self.user_message_timestamps[user_id]
+                        if t > current_time - self.spam_time_window
+                    ]
+
+                    logger.info(f"{len(self.user_message_timestamps[user_id])}/{self.max_messages_per_window}")
+        
+                    if len(self.user_message_timestamps[user_id]) > self.max_messages_per_window:
+                        try:
+                            logger.warn("Spamming detected; deleting spam messages...")
+                            await message.delete()
+                        except Forbidden:
+                            logger.error("I can't delete message; not enough permission")
             except KeyError:
                 pass
             except Exception as e:
@@ -271,29 +300,7 @@ class PoxBot(commands.AutoShardedBot):
             if inter.command_failed:
                 self.failed_interactions += 1
                 logger.error("The requested command thrown error!")
-
-    async def on_member_join(self, member: discord.Member):
-        if member.guild.id == 1429484215325425797:
-            channel = self.get_channel(1432048267520114889)
-            if channel and isinstance(channel, discord.TextChannel):
-                embed = discord.Embed(
-                    title="Join notify",
-                    description=f"Hello.\nMember <@{member.id}> has joined the server."
-                )
-                embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
-                await channel.send(embed=embed)
-
-    async def on_member_leave(self, member: discord.Member):
-        if member.guild.id == 1429484215325425797:
-            channel = self.get_channel(1432048267520114889)
-            if channel and isinstance(channel, discord.TextChannel):
-                embed = discord.Embed(
-                    title="Leave notify",
-                    description=f"Goodbye.\nMember <@{member.id}> has left."
-                )
-                embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
-                await channel.send(embed=embed)
-    
+                
 
     async def close(self) -> None:
         async with aiofiles.open("data/blacklisted_words.json", 'w+') as f:

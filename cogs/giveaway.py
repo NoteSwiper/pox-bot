@@ -149,7 +149,7 @@ class GiveawayCog(commands.Cog):
     
     @giveaway.command(name="start", description="Starts a new giveaway")
     @app_commands.checks.has_permissions(manage_guild=True)
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def start_giveaway(self, interaction: discord.Interaction, duration: str, winners: app_commands.Range[int, 1], prize: str):
         await interaction.response.defer(ephemeral=True)
 

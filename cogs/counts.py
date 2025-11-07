@@ -14,7 +14,7 @@ class CountsGroup(commands.Cog):
     group = app_commands.Group(name="count", description="An group for Counters.")
 
     @group.command(name="users", description="Get count of users.")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def count_members(self, interaction: Interaction):
         if interaction.guild is None: return await interaction.response.send_message("The commands are usable when the bot is in guild.")
 
@@ -42,7 +42,7 @@ class CountsGroup(commands.Cog):
         await interaction.response.send_message(embed=embed)
     
     @group.command(name="online_users", description="Get count of online users.")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def count_online_members(self, interaction: Interaction):
         if interaction.guild is None: return await interaction.response.send_message("The commands are usable when the bot is in guild.")
 
@@ -68,7 +68,7 @@ class CountsGroup(commands.Cog):
         await interaction.response.send_message(embed=embed)
     
     @group.command(name="roles", description="Get count of roles.")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def count_roles(self, interaction: Interaction):
         if interaction.guild is None: return await interaction.response.send_message("The commands are usable when the bot is in guild.")
 

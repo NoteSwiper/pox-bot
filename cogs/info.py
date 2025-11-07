@@ -19,7 +19,7 @@ class Info(commands.Cog):
     group = app_commands.Group(name="info", description="Informations.")
 
     @group.command(name="sync_commands", description="syncs command if panic mode")
-    @commands.is_owner()
+    @app_commands.check(stuff.is_bot_owner)
     @commands.guild_only()
     async def sync_commands(self,ctx: Interaction):
         if ctx.guild:

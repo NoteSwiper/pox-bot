@@ -17,7 +17,7 @@ class ServerConfig(commands.Cog):
         return [app_commands.Choice(name=key, value=key) for key in self.bot.available_togglers if current in key]
 
     @group.command(name="enable", description="Enables a toggle.")
-    @commands.guild_only()
+    @app_commands.guild_only()
     @app_commands.autocomplete(key=toggle_key_autocomplete)
     async def enabler(self, interaction: Interaction, key: str):
         if interaction.guild is None: return await interaction.response.send_message("This command should be runned as Guild-Install.")
@@ -43,7 +43,7 @@ class ServerConfig(commands.Cog):
         return await interaction.followup.send("Operation completed.")
 
     @group.command(name="disable", description="Disables a toggle.")
-    @commands.guild_only()
+    @app_commands.guild_only()
     @app_commands.autocomplete(key=toggle_key_autocomplete)
     async def disabler(self, interaction: Interaction, key: str):
         if interaction.guild is None: return await interaction.response.send_message("This command should be runned as Guild-Install.")

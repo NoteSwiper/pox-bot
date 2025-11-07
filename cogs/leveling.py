@@ -65,7 +65,7 @@ class XPSystem(commands.Cog):
                 await f.write(json.dumps(data_to_save, indent=4))
             logger.info("XP Data saved successfully")
         except Exception as e:
-            logger.exception("Error saving XP data asynchronously: {e}")
+            logger.exception(f"Error saving XP data asynchronously: {e}")
 
     async def save_user_data(self):
         await self._save_user_data()
@@ -102,12 +102,15 @@ class XPSystem(commands.Cog):
                 user_record['xp'] = xp
                 await self.save_user_data()
 
-                if self.bot.servers_data[str(guild_id)]['enable_level_notify'] == True:
-                    user = self.bot.get_user(user_id)
-                    if user:
-                        await channel.send(
-                            f"{user.mention} has leveled up to {level}."
-                        )
+                datainfo = self.bot.servers_data.get(str(guild_id))
+
+                if isinstance(datainfo, dict):
+                    if datainfo.get('enable_level_notify') == True:
+                        user = self.bot.get_user(user_id)
+                        if user:
+                            await channel.send(
+                                f"{user.mention} has leveled up to {level}."
+                            )
 
                 continue
             else:

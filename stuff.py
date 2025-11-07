@@ -13,6 +13,8 @@ import base64
 import dotenv
 dotenv.load_dotenv()
 
+from discord import Interaction
+
 import data
 
 if not os.path.exists('./logs'):
@@ -26,6 +28,9 @@ formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', 
 
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
+def is_bot_owner(interaction: Interaction) -> bool:
+    return interaction.user.id == 1321324137850994758
 
 def get_bot_token():
     logger.debug("Retrieving token...")

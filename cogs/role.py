@@ -38,8 +38,8 @@ class RoleGroup(commands.Cog):
     group = app_commands.Group(name="role", description="An group for Roles.")
 
     @group.command(name="give", description="Gives member a role.")
-    @commands.guild_only()
-    @commands.has_permissions(manage_roles=True)
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(manage_roles=True)
     async def give_member_role(self, interaction: Interaction, member: Member, role: Role):
         if role in member.roles:
             return await interaction.response.send_message(f"{member.name} has already given that role.")
@@ -53,8 +53,8 @@ class RoleGroup(commands.Cog):
             raise
     
     @group.command(name="take", description="Takes role from member.")
-    @commands.guild_only()
-    @commands.has_permissions(manage_roles=True)
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(manage_roles=True)
     async def take_member_role(self, interaction: Interaction, member: Member, role: Role):
         if role in member.roles:
             return await interaction.response.send_message(f"{member.name} hasn't that role.")
@@ -68,7 +68,7 @@ class RoleGroup(commands.Cog):
             raise
     
     @group.command(name="list", description="Lists roles.")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def list_roles(self, interaction: Interaction):
         if interaction.guild is None: return await interaction.response.send_message("You're using User-mode.")
         lines = []
@@ -80,7 +80,7 @@ class RoleGroup(commands.Cog):
         return await interaction.response.send_message(embed=embed)
     
     @group.command(name="list_user", description="Lists user's role.")
-    @commands.guild_only()
+    @app_commands.guild_only()
     async def list_user_roles(self, interaction: Interaction, member: Member):
         if interaction.guild is None: return await interaction.response.send_message("You're using User-mode.")
         lines = []
@@ -100,9 +100,9 @@ class RoleGroup(commands.Cog):
         return choices[:25]
 
     @group.command(name="edit", description="Edits role's permission.")
-    @commands.guild_only()
+    @app_commands.guild_only()
     @app_commands.autocomplete(permission=permission_autocomplete)
-    @commands.has_permissions(manage_roles=True)
+    @app_commands.checks.has_permissions(manage_roles=True)
     async def edit_role_permission(
         self,
         interaction: Interaction,

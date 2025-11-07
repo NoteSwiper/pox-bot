@@ -51,7 +51,7 @@ tree = bot.tree
 
 
 @tree.command(name="reload_cogs", description="Reloads cogs. (not restarting bot)")
-@commands.is_owner()
+@app_commands.check(stuff.is_bot_owner)
 async def reload_cogs(interaction: Interaction):
     loaded_extension = 0
     failed_extension = 0
