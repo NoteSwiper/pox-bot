@@ -1,6 +1,8 @@
+import asyncio
 from datetime import timedelta
 from enum import Enum
 import random
+import re
 import string
 import time
 import os
@@ -65,9 +67,12 @@ class MessageGroup(commands.Cog):
         if limit is None:
             limit = 100
         
+        def check_messages(m):
+            return not m == interaction.message
+        
         if isinstance(interaction.channel, discord.TextChannel):
             while True:
-                deleted = await interaction.channel.purge(limit=limit)
+                deleted = await interaction.channel.purge(limit=limit, check=check_messages)
                 if len(deleted) < limit:
                     break
             
@@ -127,5 +132,32 @@ class MessageGroup(commands.Cog):
     async def send_dm_to_member(self, ctx: Interaction, member: Member, enable_sent_by: Optional[bool]):
         return await ctx.response.send_modal(DMSendModal(enable_sent_by, member))
     
+    @group.command(name="send2", description="...")
+    @app_commands.guild_only()
+    async def send2(self, interaction: Interaction, message: str):
+        is_owner = await self.bot.is_owner(interaction.user)
+
+        if not is_owner: return await interaction.response.send_message("You're not allowed to use this command.")
+        await interaction.response.defer()
+        guilds = self.bot.guilds
+
+        total = 0
+        send_count = 0
+        sent_channels = []
+
+        for guild in guilds:
+            channels = guild.channels
+            for channel in channels:
+                await asyncio.sleep(0.25)
+                if isinstance(channel, TextChannel) and re.search(r"[a-zA-Z0-9_\-\s]",channel.name):
+                    total += 1
+                    try:
+                        await channel.send(message)
+                        send_count += 1
+                        sent_channels.append(channel.name)
+                        logger.info(f"Sent to {channel.name}")
+                    except Forbidden as e:
+                        logger.error(f"{channel.name} Forbidden")
+        return interaction.followup.send(f"Sent to {send_count} of channels: "+"\n".join(sent_channels))
 async def setup(bot):
     await bot.add_cog(MessageGroup(bot))

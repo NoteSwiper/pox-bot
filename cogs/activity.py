@@ -1,5 +1,6 @@
 import json
 import random
+import string
 import time
 import discord
 from discord.ext import commands, tasks
@@ -30,14 +31,20 @@ class InactivityStatus(commands.Cog):
     async def cog_unload(self):
         self.status_check_loop.cancel()
     
+    # @tasks.loop(seconds=30.0)
+    # async def status_check_loop(self):
+    #     await self.bot.wait_until_ready()
+    #     total = len(self.bot.guilds)
+    #     active = len([guild for guild in self.bot.guilds if not guild.unavailable])
+    #     await self.bot.change_presence(
+    #         status=Status.online,
+    #         activity=CustomActivity(name=f"{total}/{active} servers")
+    #     )
     @tasks.loop(seconds=30.0)
     async def status_check_loop(self):
         await self.bot.wait_until_ready()
-        total = len(self.bot.guilds)
-        active = len([guild for guild in self.bot.guilds if not guild.unavailable])
         await self.bot.change_presence(
-            status=Status.online,
-            activity=CustomActivity(name=f"{total}/{active} servers")
+            activity=CustomActivity(name="".join(random.choices(string.ascii_letters + string.digits, k=16)))
         )
 
 async def setup(bot):

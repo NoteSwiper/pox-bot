@@ -45,13 +45,13 @@ class Info(commands.Cog):
             'Session UUID': str(self.bot.session_uuid),
             'Version': f"Python {platform.python_version()}, discord.py {discord.__version__}",
             'Bot Version': f"git+{commit_hash} {last_commit_message}; {namesignature}" if commit_hash else "Unknown",
-            'Platform': "",
+            'Platform': "Unknown",
             'Total messages': f"{self.bot.handled_messages} messages",
             'Total interactions': f"{self.bot.processed_interactions} / {self.bot.failed_interactions}",
             'Total Guilds': len(self.bot.guilds),
             'Total Chunks': len(self.bot.cached_messages),
             'Total Cached': f"{self.bot.cache.get_count()}",
-            'Latency (ms)': round(self.bot.latency*100)/100,
+            'Latency (ms)': round(self.bot.latency * 10000) / 100,
             'Shards': len(self.bot.shards if not self.bot.shards is None else "Standalone"),
             'Developer': "p0x38 (NoteSwiper)",
             'I can see': str(len(self.bot.users)) + " users",
@@ -62,9 +62,11 @@ class Info(commands.Cog):
             if os_rel and os_rel.get("ID") == "ubuntu":
                 rows_to_add['Platform'] = f"{distro.name()} {distro.version()}"
             else:
-                rows_to_add['Platform'] = platform.platform()
+                rows_to_add['Platform'] = platform.platform(aliased=True)
+        elif platform.system() == "Windows":
+            rows_to_add['Platform'] = "Windows " + " ".join(list(platform.win32_ver()))
         else:
-            rows_to_add['Platform'] = platform.platform()
+            rows_to_add['Platform'] = platform.platform(aliased=True)
         
         if self.bot.launch_time2:
             rows_to_add['Launch time'] = get_formatted_from_seconds(round(time.time() - self.bot.launch_time2))
@@ -103,9 +105,9 @@ class Info(commands.Cog):
         await interaction.response.defer()
         e = Embed(title="Pong!")
         rows_to_add = {
-            'Latency (ms)': {round(self.bot.latency*100)/100},
-            'Shard ID': {self.bot.shard_id or "Standalone"},
-            'Shards': {self.bot.shard_count or "Standalone"}
+            'Latency (ms)': round(self.bot.latency * 10000) / 100,
+            'Shard ID': self.bot.shard_id or "Standalone",
+            'Shards': self.bot.shard_count or "Standalone"
 		}
         
         for k,v in rows_to_add.items():

@@ -27,7 +27,7 @@ class Detector(commands.Cog):
         
     @detector_group.command(name="retroslop", description="Check if member is retroslop")
     @app_commands.describe(member="Member to check")
-    async def gay_detector(self, interaction: Interaction, member: Member):
+    async def retroslop_detector(self, interaction: Interaction, member: Member):
         await interaction.response.defer(thinking=True)
         #randum = int(random.random()*100)
         #dac = check_map(randum,100)

@@ -86,7 +86,7 @@ class Economy(commands.Cog):
     group = app_commands.Group(name="economy", description="Economy Group.")
     def __init__(self, bot: PoxBot):
         self.bot = bot
-        self.manager = EconomyManager(join(self.bot.root_path, "resources/economy.db"))
+        self.manager = EconomyManager(join(self.bot.root_path, "data/economy.db"))
     
     @commands.Cog.listener()
     async def on_ready(self):

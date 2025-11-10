@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "aioconsole>=0.8.2",
     "aiofiles>=25.1.0",
+    "aiohttp>=3.13.2",
     "aiosqlite>=0.21.0",
     "discord-py>=2.6.4",
     "distro>=1.9.0",

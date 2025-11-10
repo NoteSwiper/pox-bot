@@ -1248,6 +1248,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "aioconsole" },
     { name = "aiofiles" },
+    { name = "aiohttp" },
     { name = "aiosqlite" },
     { name = "discord-py" },
     { name = "distro" },
@@ -1274,6 +1275,7 @@ dependencies = [
 requires-dist = [
     { name = "aioconsole", specifier = ">=0.8.2" },
     { name = "aiofiles", specifier = ">=25.1.0" },
+    { name = "aiohttp", specifier = ">=3.13.2" },
     { name = "aiosqlite", specifier = ">=0.21.0" },
     { name = "discord-py", specifier = ">=2.6.4" },
     { name = "distro", specifier = ">=1.9.0" },

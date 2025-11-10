@@ -191,11 +191,11 @@ class PoxBot(commands.AutoShardedBot):
                         if t > current_time - self.spam_time_window
                     ]
 
-                    logger.info(f"{len(self.user_message_timestamps[user_id])}/{self.max_messages_per_window}")
+                    #logger.info(f"{len(self.user_message_timestamps[user_id])}/{self.max_messages_per_window}")
         
                     if len(self.user_message_timestamps[user_id]) > self.max_messages_per_window:
                         try:
-                            logger.warn("Spamming detected; deleting spam messages...")
+                            logger.warning("Spamming detected; deleting spam messages...")
                             await message.delete()
                         except Forbidden:
                             logger.error("I can't delete message; not enough permission")

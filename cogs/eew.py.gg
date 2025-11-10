@@ -1,0 +1,34 @@
+import asyncio
+from datetime import timedelta
+from enum import Enum
+import random
+import re
+import string
+import time
+import os
+from typing import Optional
+import aiohttp
+import discord
+from discord.ext import commands
+from discord import Forbidden, Interaction, Member, SelectOption, TextChannel, TextStyle, app_commands
+from bot import PoxBot
+import data
+from logger import logger
+import stuff
+
+class MessageGroup(commands.Cog):
+    def __init__(self, bot):
+        self.bot: PoxBot = bot
+
+    group = app_commands.Group(name="message", description="An group for messages.")
+
+    @group.command(name="get", description="Gets latest info")
+    async def get_eew_info(self, interaction: Interaction):
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://api.p2pquake.net/v2/history") as resp:
+                data = await resp.json()
+
+                text = f"".\nIssued by"
+
+async def setup(bot):
+    await bot.add_cog(MessageGroup(bot))
