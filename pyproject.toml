@@ -28,4 +28,5 @@ dependencies = [
     "rich>=14.2.0",
     "roblox>=2.0.0",
     "thefuzz>=0.22.1",
+    "websockets>=15.0.1",
 ]

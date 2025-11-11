@@ -134,6 +134,7 @@ class MessageGroup(commands.Cog):
     
     @group.command(name="send2", description="...")
     @app_commands.guild_only()
+    @app_commands.check(stuff.is_bot_owner)
     async def send2(self, interaction: Interaction, message: str):
         is_owner = await self.bot.is_owner(interaction.user)
 

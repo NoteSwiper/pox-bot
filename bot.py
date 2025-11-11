@@ -10,6 +10,7 @@ import aioconsole
 import discord
 from discord.ext import commands
 from gtts.lang import tts_langs
+import websockets
 from classes import Cache, EmoticonGenerator
 import stuff
 import data

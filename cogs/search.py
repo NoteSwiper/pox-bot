@@ -70,7 +70,7 @@ class SearchIndexMaker(commands.Cog):
             return
 
     @group.command(name="query_list", description="Get list of query.")
-    async def query_count(self, interaction: Interaction):
+    async def query_list(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
 
         if self.bot.db_connection:

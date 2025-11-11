@@ -68,6 +68,7 @@ class Generators(Cog):
 
     @app_commands.command(name="target_close", description="Target Closing Algorithm")
     async def algorithm_closing_to_target(self, ctx: Interaction, target_value: Optional[float], concurrents: Optional[int]):
+        await ctx.response.defer()
         conc = stuff.clamp(concurrents or 10, 1, 20)
         histories = [stuff.approach_target(target_value or 20) for _ in range(conc)]
         
@@ -100,10 +101,11 @@ class Generators(Cog):
         
         e.set_image(url="attachment://output.png")
         if file and e:
-            await ctx.response.send_message(file=file, embed=e)
+            await ctx.followup.send(file=file, embed=e)
     
     @app_commands.command(name="computer_latency",description="Calculates hosted computer's latency")
     async def check_computer_latency(self, ctx: Interaction, delay: Optional[float]):
+        await ctx.response.defer()
         delay = stuff.clamp_f(delay or 150, 10,1000) / 10
         delay2 = delay / 1000
         iterations = int(1/delay2)
@@ -137,7 +139,7 @@ class Generators(Cog):
         
         e.set_image(url="attachment://output.png")
         if file and e:
-            await ctx.response.send_message(file=file, embed=e)
+            await ctx.followup.send(file=file, embed=e)
 
     
     @app_commands.command(name="markov", description="Generates random lines with Markov-chain")
