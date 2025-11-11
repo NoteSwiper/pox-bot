@@ -1,6 +1,9 @@
 from collections import Counter, defaultdict
 import random
 import time
+from typing import Optional
+
+from discord import Color, Embed
 
 import data
 

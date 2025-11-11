@@ -236,5 +236,21 @@ class UserGroup(commands.Cog):
         else:
             await member.edit(nick=new_nick, reason=f"Nickname changed by {interaction.user.name} via /user nick")
             return await interaction.response.send_message(f"Changed {member.name}'s Nickname to **{new_nick}**.")
+    
+    @group.command(name="status", description="Checks member's status.")
+    @app_commands.guild_only()
+    async def get_user_status(self, interaction: Interaction, member: Member):
+        await interaction.response.defer()
+        result = ""
+        
+        if interaction.guild:
+            member2 = interaction.guild.get_member(member.id)
+            if member2:
+                result = member2.status
+
+        e = Embed(title=f"`{member.name}`'s status",description=f"<@{member.id}> is {result}!")
+
+        await interaction.followup.send(embed=e)
+
 async def setup(bot):
     await bot.add_cog(UserGroup(bot))

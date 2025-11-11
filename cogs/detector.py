@@ -106,34 +106,5 @@ class Detector(commands.Cog):
         
         await interaction.followup.send(embed=e)
     
-    @detector_group.command(name="rng_member", description="Selects random members (only real members)")
-    @app_commands.guild_only()
-    async def random_member_selector(self, interaction: Interaction, max_select: Optional[int]):
-        await interaction.response.defer()
-
-        if interaction.guild is None:
-            await interaction.followup.send("This feature can only be used in Guild-install.")
-            return
-
-        if max_select is None:
-            max_select = 1
-        
-        members = []
-
-        for member in interaction.guild.members:
-            if member.bot: continue
-            members.append(member)
-        
-        random.shuffle(members)
-
-        embed = Embed(title=f"Selected members.")
-        lines = ["Selected members are:"]
-        for i,member in enumerate(members[:max_select]):
-            lines.append(f"{i}. <@{member.id}>")
-        
-        embed.description = "\n".join(lines)
-
-        await interaction.followup.send(embed=embed)
-    
 async def setup(bot):
     await bot.add_cog(Detector(bot))

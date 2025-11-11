@@ -1,4 +1,5 @@
-from discord import Interaction, app_commands
+import aiohttp
+from discord import Color, Embed, Interaction, app_commands
 from discord.ext import commands
 import random
 import string
@@ -190,6 +191,42 @@ class Converters(commands.Cog):
     async def reverser(self, interaction: Interaction, text: str):
         vce = ' '.join(word[::-1] for word in text.split(" "))
         await interaction.response.send_message(vce)
+    
+    @converter_group.command(name="color_name", description="Retrieves color name from colornames.org.")
+    async def color_name(self, interaction: Interaction, hex: str):
+        await interaction.response.defer()
+
+        hex = stuff.expand_hex(hex)
+
+        embed = Embed(title=f"Color name of {hex}")
+
+        cached = self.bot.cache.get(f'colornames.org_{hex}')
+
+        if not cached:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"https://colornames.org/search/json/?hex={hex}") as response:
+                    if response.status != 200:
+                        embed.description = "Couldn't get info."
+                        return await interaction.followup.send(embed=embed)
+
+                    data = await response.json()
+
+                    if not isinstance(data, dict) or not data:
+                        embed.description = "The response is invalid or empty."
+                        return await interaction.followup.send(embed=embed)
+                    
+                    cached = data
+                    self.bot.cache.set(f'colornames.org_{hex}', cached)
+        
+        if not isinstance(cached, dict) or not cached:
+            embed.description = "Retrieved data is not valid."
+            return await interaction.followup.send(embed=embed)
+
+        embed.description = f"**{cached.get('name', "Unknown")}**"
+        embed.color = Color.from_str(f"#{hex}")
+
+        return await interaction.followup.send(embed=embed)                
+
 # i will add this but not this time :(
 # https://colornames.org/search/json/?hex=FF0000
 

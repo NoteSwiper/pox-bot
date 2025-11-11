@@ -551,3 +551,18 @@ def expand_hex(s):
 
 def truncate(text,length=4000):
     return (text[:length-1]+'…') if len(text) > length else text
+
+def expand_hex(short: str) -> str:
+    clean_hex = short.lstrip('#').lower()
+
+    if len(clean_hex) != 3:
+        return "000000"
+    
+    if not re.fullmatch(r'[0-9a-f]{3}', clean_hex):
+        return "000000"
+    
+    r,g,b = clean_hex[0], clean_hex[1], clean_hex[2]
+
+    expanded = f"{r}{r}{g}{g}{b}{b}"
+
+    return expanded

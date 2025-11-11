@@ -14,7 +14,7 @@ class Blacklister(commands.Cog):
     
     group = app_commands.Group(name="blacklist", description="Blacklister.")
 
-    @group.command(name="word_add", description="Adds blacklisted word to server.")
+    @group.command(name="add", description="Adds blacklisted word to server.")
     @app_commands.checks.has_permissions(manage_messages=True,manage_guild=True)
     @app_commands.guild_only()
     async def add_blacklisted_word(self, interaction: Interaction, word: str):
@@ -39,7 +39,7 @@ class Blacklister(commands.Cog):
         await interaction.followup.send(f"Added {word} to the server's blacklisted words.\nIf you want this feature works, make sure the bot to higher than members.")
     
 
-    @group.command(name="word_remove", description="Removes blacklisted word from server.")
+    @group.command(name="remove", description="Removes blacklisted word from server.")
     @app_commands.checks.has_permissions(manage_messages=True,manage_guild=True)
     @app_commands.guild_only()
     async def remove_blacklisted_word(self, interaction: Interaction, word: str):
@@ -64,7 +64,7 @@ class Blacklister(commands.Cog):
 
         await interaction.followup.send(f"Removed {word} from the server's blacklisted words.\nIf you want this feature works, make sure the bot to higher than members.")
     
-    @group.command(name="word_list", description="Lists banned words.")
+    @group.command(name="list", description="Lists banned words.")
     @app_commands.guild_only()
     @app_commands.checks.has_permissions(manage_messages=True, manage_guild=True)
     async def list_blacklisted_words(self, interaction: Interaction):
