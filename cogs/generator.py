@@ -147,7 +147,7 @@ class Generators(Cog):
     async def generate_markovified_text(self, ctx: Interaction, amount: Optional[int]):
         await ctx.response.defer()
         amount = stuff.clamp(amount or 1, 1, 16)
-        text2 = stuff.get_markov_dataset("2")
+        text2 = await stuff.get_markov_dataset("m2")
         
         if not text2:
             await ctx.followup.send("Unexcepted error occured.")
@@ -158,8 +158,8 @@ class Generators(Cog):
         model = markovify.Text(text, state_size=3)
         
         results = [model.make_sentence() for _ in range(amount)]
-                
-        e = Embed(title="Generated lines")
+
+        lines = []
         
         for i,result in enumerate(results):
             if not result:
@@ -168,17 +168,16 @@ class Generators(Cog):
                     if result and not result in text2:
                         break
             
-            e.add_field(name=f"Line {i+1}",value=result, inline=False)
-        
-        e.set_footer(text="Please be aware about the response may includes sensitive expressions, harmful expressions and an expression that may affect to the humans.")
-        await ctx.followup.send(embed=e)
+            lines.append(result)
+
+        await ctx.followup.send("\n".join(lines))
     
     @app_commands.command(name="markov2", description="Generates SCP-like anomaly with Markov-chain")
     @app_commands.describe(amount="Times to generate, up to 16 iterations (lines).")
     async def generate_markovified_anomaly_text(self, ctx: Interaction, amount: Optional[int]):
         await ctx.response.defer()
         amount = stuff.clamp(amount or 1, 1, 16)
-        text2 = stuff.get_markov_dataset("1")
+        text2 = await stuff.get_markov_dataset("m1")
         
         if not text2:
             await ctx.followup.send("Unexcepted error occured.")
@@ -189,8 +188,8 @@ class Generators(Cog):
         model = markovify.Text(text, state_size=3)
         
         results = [model.make_sentence() for _ in range(amount)]
-                
-        e = Embed(title="Generated lines")
+
+        lines = []
         
         for i,result in enumerate(results):
             if not result:
@@ -199,8 +198,9 @@ class Generators(Cog):
                     if result and not result in text2:
                         break
             
-            e.add_field(name=f"Line {i+1}",value=result, inline=False)
-        await ctx.followup.send(embed=e)
+            lines.append(result)
+
+        await ctx.followup.send("\n".join(lines))
 
     @app_commands.command(name="meow",description="Make me say miaw :3")
     @app_commands.describe(put_face="Enables extra face such as :3")

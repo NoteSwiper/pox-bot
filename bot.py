@@ -63,7 +63,9 @@ class PoxBot(commands.AutoShardedBot):
         self.user_message_timestamps = {}
         self.emoticon_generator = EmoticonGenerator()
         self.custom_activity = os.path.join(self.root_path, "resources/what_2.txt")
-    
+        self.server_data2 = {}
+        self.server_data2_loaded = False
+
     async def setup_hook(self):
         stuff.setup_database("./leaderboard.db")
         
@@ -86,11 +88,26 @@ class PoxBot(commands.AutoShardedBot):
                 content = await f.read()
                 self.servers_data = json.loads(content)
                 logger.debug(self.servers_data)
+                self.servers_data_loaded = True
         except FileNotFoundError:
             self.servers_data = {}
+            self.servers_data_loaded = True
         except json.JSONDecodeError:
             logger.error("server_data.json is empty or invalid.")
             self.servers_data = {}
+            self.servers_data_loaded = False
+        
+        try:
+            async with aiofiles.open('data/server_data2.json', 'r+') as f:
+                content = await f.read()
+                self.server_data2 = json.loads(content)
+                logger.debug("server_data2 loaded")
+        except FileNotFoundError:
+            self.server_data2 = {}
+        except json.JSONDecodeError:
+            logger.error("server_data2.json is empty or invalid.")
+            self.server_data2 = {}
+        
         """
         try:
             if self.custom_activity is not None:
@@ -309,6 +326,10 @@ class PoxBot(commands.AutoShardedBot):
         
         async with aiofiles.open("data/server_data.json", 'w+') as f:
             await f.write(json.dumps(self.servers_data, indent=4))
+        
+        if self.server_data2_loaded:
+            async with aiofiles.open("data/server_data2.json", 'w+') as f:
+                await f.write(json.dumps(self.server_data2, indent=4))
 
         if self.db_connection:
             await self.db_connection.commit()

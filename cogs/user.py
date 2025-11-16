@@ -1,10 +1,12 @@
 from datetime import timedelta
+import math
 from typing import Optional
 from discord.ext import commands
-from discord import Activity, ActivityType, ClientStatus, CustomActivity, Embed, Forbidden, Game, HTTPException, Interaction, Member, Role, Spotify, Status, Streaming, app_commands
+from discord import Activity, ActivityType, ClientStatus, Color, CustomActivity, Embed, Forbidden, Game, HTTPException, Interaction, Member, Role, Spotify, Status, Streaming, app_commands
 
 from bot import PoxBot
 
+from cogs import checker
 from logger import logger
 
 def format_status(client_status: ClientStatus):
@@ -37,6 +39,14 @@ def format_status(client_status: ClientStatus):
         result = result + f" ({", ".join(platforms)})"
 
     return result
+
+def get_next_power_of_two(n: int) -> int:
+    if n <= 0:
+        return 1
+    
+    exponent = math.ceil(math.log2(n+1))
+
+    return 2 ** exponent
 
 class UserGroup(commands.Cog):
     def __init__(self, bot):
@@ -251,6 +261,32 @@ class UserGroup(commands.Cog):
         e = Embed(title=f"`{member.name}`'s status",description=f"<@{member.id}> is {result}!")
 
         await interaction.followup.send(embed=e)
+    
+    @group.command(name="remaining", description="Returns remaining members to reach a goal value.")
+    @app_commands.guild_only()
+    async def get_remaining_members(self, interaction: Interaction, goal: Optional[int] = None):
+        if interaction.guild is None: return await interaction.response.send_message("Object is not guild", ephemeral=True)
+
+        member_count = len(interaction.guild.members)
+
+        embed = Embed(title="Number of remaining members to reach the desired value")
+
+        await interaction.response.defer()
+
+        if goal is None:
+            goal = get_next_power_of_two(member_count)
+            #goal = (round(member_count/1000)*1000)+1000
+        
+        remaining = goal - member_count
+
+        if remaining <= 0:
+            embed.description = f"The server has already reached the goal of {goal} members!"
+            embed.color = Color.green()
+        else:
+            embed.description = f"The server needs {remaining} more members to reach the goal of {goal} members."
+            embed.color = Color.blurple()
+
+        await interaction.followup.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(UserGroup(bot))

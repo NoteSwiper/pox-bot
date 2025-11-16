@@ -137,22 +137,21 @@ class Checker(commands.Cog):
         
         await interaction.followup.send(embed=embed)
     
-    @checker_group.command(name="remaining_member_to", description="Returns remaining members to reach a value.")
+    @checker_group.command(name="even_or_odd", description="Check if User is even or odd (User ID)")
     @app_commands.guild_only()
-    async def get_remaining_members(self, interaction: Interaction, goal: Optional[int] = 100):
+    async def get_even_or_odd(self, interaction: Interaction, member: Optional[Member] = None):
+        if interaction.guild is None: return await interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
+
         await interaction.response.defer()
-        if not interaction.guild:
-            await interaction.followup.send("Object is not guild")
-            return
+        if member is None:
+            member = interaction.guild.get_member(interaction.user.id)
         
-        member_count = (len(interaction.guild.members) if interaction.guild else 0)
+        if not member:
+            return await interaction.followup.send("Member not found.")
 
-        if goal is None:
-            goal = (round(member_count/1000)*1000)+1000
-        
-        e = Embed(title=f"Remaining members to reach {goal} (including bots)", description=f"Need {goal-member_count} members to reach {goal}.")
-
-        await interaction.followup.send(embed=e)
-
+        if member.id % 2 == 0:
+            return await interaction.followup.send(f"{member.display_name}'s is even.")
+        else:
+            return await interaction.followup.send(f"{member.display_name}'s is odd.")
 async def setup(bot):
     await bot.add_cog(Checker(bot))

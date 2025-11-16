@@ -10,6 +10,7 @@ import logging
 import logging.handlers
 import re
 import base64
+import aiofiles
 import dotenv
 dotenv.load_dotenv()
 
@@ -504,12 +505,12 @@ def clamp_f(n:float,min:float,max:float):
     elif n > max: return max
     else: return n
 
-def get_markov_dataset(name: str = "2"):
-    if not os.path.exists(f"./markov-texts/{name}.txt"):
+async def get_markov_dataset(name: str = "2"):
+    if not os.path.exists(f"./resources/{name}.txt"):
         logger.error("The file not found")
         return None
-    with open(f"./markov-texts/{name}.txt", 'r') as f:
-        line = f.read()
+    async with aiofiles.open(f"./resources/{name}.txt", 'r', encoding="utf-8") as f:
+        line = await f.read()
     
     lines = line.split("\n")
     
@@ -536,7 +537,7 @@ def check_string_for_hex(s):
     hexs = set('0123456789abcdef#')
     return all(char.lower() not in hexs for char in s)
 
-def expand_hex(s):
+def expand_hex_old(s):
     if check_string_for_hex(s):
         if len(s) == 4 and s.startswith('#'):
             return ''.join(c*2 for c in s[1:])
