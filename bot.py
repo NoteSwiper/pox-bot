@@ -92,8 +92,9 @@ class PoxBot(commands.AutoShardedBot):
                         message_id BIGINT, emoji VARCHAR(255), role_id BIGINT, PRIMARY KEY (message_id, emoji)
                     )
                 """)
+
         try:
-            async with aiofiles.open('data/blacklisted.json', 'r+') as f:
+            async with aiofiles.open('data/blacklisted_words.json', 'r+') as f:
                 content = await f.read()
                 self.blacklisted_words = json.loads(content)
                 logger.debug(self.blacklisted_words)
@@ -197,25 +198,14 @@ class PoxBot(commands.AutoShardedBot):
         if message.author == self.user or message.mention_everyone: return
         
         if message.guild:
-            blacklists = self.blacklisted_words.get(str(message.guild.id), {})
-            blacklisted_words = blacklists.get('word', None)
-            blacklisted_members = blacklists.get('member', None)
-            blacklisted_chats = blacklists.get('chat', None)
+            blacklisted_words = self.blacklisted_words.get(str(message.guild.id))
             
             has_permission = message.channel.permissions_for(message.guild.me).manage_messages
             is_author_lower = message.author.top_role < message.guild.me.top_role if isinstance(message.author, discord.Member) else True
             
             try:
-                content = message.content.lower()
-                if blacklisted_chats is not None:
-                    if str(message.channel.id) in blacklisted_chats and is_author_lower and has_permission:
-                        logger.debug(f"Blacklisted chat has found from message; deleting")
-                        await message.delete()
-                elif blacklisted_members is not None:
-                    if str(message.author.id) in blacklisted_members and is_author_lower and has_permission:
-                        logger.debug(f"Blacklisted member has found from message; deleting")
-                        await message.delete()
-                elif blacklisted_words is not None:
+                content = message.content.lower()                
+                if blacklisted_words is not None:
                     combined_pattern = r'\b(' + '|'.join(blacklisted_words) + r')\b'
                     is_match = re.search(combined_pattern, content)
 
@@ -352,7 +342,7 @@ class PoxBot(commands.AutoShardedBot):
                 
 
     async def close(self) -> None:
-        async with aiofiles.open("data/blacklisted.json", 'w+') as f:
+        async with aiofiles.open("data/blacklisted_words.json", 'w+') as f:
             await f.write(json.dumps(self.blacklisted_words, indent=4))
         
         async with aiofiles.open("data/server_data.json", 'w+') as f:
