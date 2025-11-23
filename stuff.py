@@ -31,6 +31,12 @@ def get_bot_token():
     logger.debug("Retrieving token...")
     return os.getenv('TOKEN')
 
+def get_mysql_credentials():
+    logger.debug("Retrieving MySQL credentials...")
+    user = os.getenv('MYSQL_USER')
+    password = os.getenv('MYSQL_PASS')
+    return user, password
+
 def _find_key_recursive(config: dict,key) -> bool:
     if key in config:
         logging.debug(f"Found key '{key}' at a nested level.")
@@ -238,12 +244,13 @@ def check_map():
     return random.choice(data.possibility_words)
 
 def get_formatted_from_seconds(seconds):
-    seconds = seconds % (24 * 3600)
-    hour = seconds // 3600
-    seconds %= 3600
-    minute = seconds // 60
-    seconds %= 60
-    return f"{hour} hours {minute} minutes {seconds} seconds"
+    days, remainder = divmod(seconds, 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    if days > 0:
+        return f"{int(days):02d}:{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
+    return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
 
 def get_case_pattern(word):
     return [char.isupper() for char in word]

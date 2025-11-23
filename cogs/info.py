@@ -11,7 +11,6 @@ from bot import PoxBot
 from stuff import get_formatted_from_seconds
 import stuff
 
-
 class Info(commands.Cog):
     def __init__(self, bot):
         self.bot: PoxBot = bot
@@ -120,13 +119,31 @@ class Info(commands.Cog):
         await ctx.response.defer()
         await ctx.followup.send("p0x38 is retroslop.")
 
-    @group.command(name="timedate", description="Shows time in bot's time")
+    @group.command(name="bot_timestamp", description="Shows time in bot's time")
     async def get_bot_timestamp(self, ctx: discord.Interaction):
         await ctx.response.defer()
         timec = datetime.now(pytz.timezone("Asia/Tokyo"))
         
-        await ctx.followup.send(f"I'm on {datetime.strftime(timec, '%Y-%m-%d %H:%M:%S%z')}.")
+        await ctx.followup.send(f"I'm on {datetime.strftime(timec, '%Y-%m-%d %H:%M:%S%z')} :3")
     
+    async def get_timezone_timestamp_autocomplete(self, interaction: discord.Interaction, current: str):
+        timezones = pytz.all_timezones
+        return [
+            app_commands.Choice(name=tz, value=tz)
+            for tz in timezones if current.lower() in tz.lower()
+        ][:25]
+    
+    @group.command(name="timedate", description="Shows time in specified timezone")
+    @app_commands.autocomplete(timezone=get_timezone_timestamp_autocomplete)
+    async def get_timezone_timestamp(self, ctx: discord.Interaction, timezone: str):
+        await ctx.response.defer(ephemeral=True)
+        try:
+            tz = pytz.timezone(timezone)
+            timec = datetime.now(tz)
+            await ctx.followup.send(f"In timezone {timezone}, it's **{datetime.strftime(timec, '%Y.%m.%d, %H:%M:%S with the UTC offset %z')}**.", ephemeral=True)
+        except Exception as e:
+            await ctx.followup.send(f"An error occurred: {str(e)}", ephemeral=True)
+
     @group.command(name="name_signature", description="Shows temporary signature for the bot.")
     async def namesignature(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -154,6 +171,32 @@ class Info(commands.Cog):
             status = "Pox is sometime active."
         
         await ctx.response.send_message(f"{status}\nMay the result varies by the time, cuz it is very advanced to do... also this is not accurate.")
+    
+    @group.command(name="os_info", description="Shows operating system information.")
+    async def os_info(self, interaction: discord.Interaction):
+        await interaction.response.defer()
         
+        e = discord.Embed(title="Operating System Information")
+
+        system = platform.system()
+
+        if platform.system() == "Linux":
+            os_rel = platform.freedesktop_os_release()
+            if os_rel:
+                os_type = os_rel.get("ID") if os_rel else "unknown"
+                if os_type == "ubuntu":
+                    distro_name = distro.name()
+                    distro_version = distro.version()
+                    e.add_field(name="Distro", value=f"{distro_name} {distro_version}")
+                else:
+                    e.add_field(name="Platform", value=f"{platform.platform(aliased=True)} ({os_type})")
+            else:
+                e.add_field(name="Platform", value=platform.platform(aliased=True))
+        elif platform.system() == "Windows":
+            e.add_field(name="Platform", value="Windows " + " ".join(list(platform.win32_ver())))
+        else:
+            e.add_field(name="Platform", value=platform.platform(aliased=True))
+        
+        await interaction.followup.send(embed=e)
 async def setup(bot):
     await bot.add_cog(Info(bot))
