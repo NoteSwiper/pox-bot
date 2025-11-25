@@ -26,6 +26,18 @@ class Utility(commands.Cog):
         e.description = f"Result: {choice}"
 
         await interaction.response.send_message(embed=e)
+
+    @app_commands.command(name="yes_or_no", description="Gives yes or no to your ask")
+    @app_commands.describe(question="Question")
+    async def yes_or_no(self, interaction: Interaction, question: str):
+        choice = random.choice(["Yeah","Nope"])
+
+        e = Embed(
+            title=f"Question: `{question}`",
+            description=f"Result: {choice}",
+        )
+
+        await interaction.response.send_message(embed=e)
     
     @app_commands.command(name="coinflip", description="Flips a coin and says 'Heads' or 'Tails'.")
     @app_commands.describe(input="Text to desire.")
