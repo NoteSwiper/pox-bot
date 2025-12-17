@@ -249,8 +249,8 @@ def get_formatted_from_seconds(seconds):
     minutes, seconds = divmod(remainder, 60)
 
     if days > 0:
-        return f"{int(days):02d}:{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
-    return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
+        return f"{int(days):02d} d, {int(hours):02d}h, {int(minutes):02d}m, and {int(seconds):02d}s"
+    return f"{int(hours):02d}h, {int(minutes):02d}m, and {int(seconds):02d}s"
 
 def get_case_pattern(word):
     return [char.isupper() for char in word]

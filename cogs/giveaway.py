@@ -29,7 +29,7 @@ class GiveawayCog(commands.Cog):
         await self._load_giveaways()
         self.giveaway_task.start()
     
-    def cog_unload(self):
+    async def cog_unload(self):
         self.giveaway_task.cancel()
         self.bot.loop.create_task(self._save_giveaways())
     

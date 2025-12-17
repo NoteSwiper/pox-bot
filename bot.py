@@ -191,7 +191,7 @@ class PoxBot(commands.AutoShardedBot):
             logger.exception("TranslationError: Error occured while translating commands")
         except HTTPException:
             logger.error("HTTPException: Failed to sync commands")
-            
+    
     async def on_message(self,message: discord.Message):
         self.handled_messages += 1
         

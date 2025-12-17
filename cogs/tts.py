@@ -1,5 +1,6 @@
 from io import BytesIO
 import sys
+from time import time
 from typing import Optional
 import discord
 import wave
@@ -7,9 +8,10 @@ from discord.ext import commands
 from discord import app_commands
 from edge_tts import Communicate
 from gtts import gTTS
-from piper import PiperVoice
+from piper import PiperVoice, SynthesisConfig
 from bot import PoxBot
 from logger import logger
+from stuff import clamp_f
 
 voice = PiperVoice.load("./resources/voices/en_US-ryan-high.onnx")
 
@@ -50,7 +52,7 @@ class TTS(commands.Cog):
             logger.exception(f"{e}")
             return
         
-        dfile = discord.File(abuffer, filename="GoogleTTS.mp3")
+        dfile = discord.File(abuffer, filename=f"GoogleTTS_{lang}_{str(int(time()))}.mp3")
         
         try:
             await interaction.followup.send(f"Generated. >:D\nType: Google TTS, Input: {text}",file=dfile)
@@ -59,17 +61,34 @@ class TTS(commands.Cog):
             logger.exception(f"{e}")
     
     @ttsgroup.command(name="piper")
-    async def piper_text_to_speech(self, interaction: discord.Interaction, text: str):
+    async def piper_text_to_speech(
+        self,
+        interaction: discord.Interaction,
+        text: str,
+        volume: Optional[float] = 1.0,
+        length_scale: Optional[float] = 1.0,
+        noise_scale: Optional[float] = 0.667,
+        noise_w_scale: Optional[float] = 0.8,
+        normalize: Optional[bool] = False,
+    ):
         await interaction.response.defer(thinking=True)
         
         abuffer = BytesIO()
         try:
+            syn_config = SynthesisConfig(
+                volume=clamp_f(volume or 1.0, 0.1, 5.0),
+                length_scale=clamp_f(length_scale or 1.0, 0.25, 4.0),
+                noise_scale=clamp_f(noise_scale or 0.667, 0.0, 1.0),
+                noise_w_scale=clamp_f(noise_w_scale or 0.8, 0.0, 1.0),
+                normalize_audio=normalize or True,
+            )
+
             with wave.open(abuffer, 'wb') as wf:
                 wf.setnchannels(1)
                 wf.setsampwidth(2)
                 wf.setframerate(voice.config.sample_rate)
                 
-                for raw in voice.synthesize(text):
+                for raw in voice.synthesize(text, syn_config):
                     wf.writeframes(raw.audio_int16_bytes)
             abuffer.seek(0)
         except Exception as e:
@@ -77,7 +96,7 @@ class TTS(commands.Cog):
             logger.exception(f"{e}")
             return
         
-        dfile = discord.File(abuffer, filename=f"PiperTTS.mp3")
+        dfile = discord.File(abuffer, filename=f"PiperTTS_{str(int(time()))}.wav")
         
         try:
             await interaction.followup.send(f"Generated. >:D\nType: Piper TTS, Input: {text}",file=dfile)
@@ -116,10 +135,10 @@ class TTS(commands.Cog):
             logger.exception(f"{e}")
             return
         
-        dfile = discord.File(abuffer, filename="EdgeTTS.mp3")
+        dfile = discord.File(abuffer, filename=f"EdgeTTS_{lang}_{str(int(time()))}.mp3")
         
         try:
-            await interaction.followup.send(f"Genarated. >:D\nType: Edge TTS, Input: {text}",file=dfile)
+            await interaction.followup.send(f"Generated. >:D\nType: Edge TTS, Input: {text}",file=dfile)
         except Exception as e:
             await interaction.followup.send(f"An error occured while sending speech: {e}")
             logger.exception(f"{e}")
