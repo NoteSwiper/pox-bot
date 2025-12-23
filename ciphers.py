@@ -1,3 +1,4 @@
+from operator import isub
 import string
 import textwrap
 from typing import Optional
@@ -128,4 +129,44 @@ def binary(input: str, decode: bool = False):
         chunks = [format(ord(char), '08b') for char in input]
 
         return ' '.join(chunks)
-    
+
+def psc1(input: str, decode: bool = False) -> str:
+    output = ""
+
+    if not decode:
+        for char in input:
+            if char.isupper():
+                output += chr((ord(char) - 65 + 13) % 26 + 65)
+            elif char.islower():
+                output += chr((ord(char) - 97 + 13) % 26 + 97)
+            else:
+                output += char
+
+        # reverse each chunks of 5 characters and loop back by -1 characters
+        chunk_size = 5
+        reversed_chunks = []
+        for i in range(0, len(output), chunk_size):
+            chunk = output[i:i + chunk_size]
+            reversed_chunks.append(chunk[::-1])
+
+        final_output = ''.join(reversed_chunks)
+        return final_output
+    else:
+        # reverse each chunks of 5 characters and loop back by -1 characters
+        chunk_size = 5
+        reversed_chunks = []
+        for i in range(0, len(input), chunk_size):
+            chunk = input[i:i + chunk_size]
+            reversed_chunks.append(chunk[::-1])
+
+        reversed_input = ''.join(reversed_chunks)
+
+        for char in reversed_input:
+            if char.isupper():
+                output += chr((ord(char) - 65 - 13) % 26 + 65)
+            elif char.islower():
+                output += chr((ord(char) - 97 - 13) % 26 + 97)
+            else:
+                output += char
+
+        return output

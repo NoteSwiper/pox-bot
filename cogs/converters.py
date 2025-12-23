@@ -225,8 +225,34 @@ class Converters(commands.Cog):
         embed.description = f"**{cached.get('name', "Unknown")}**"
         embed.color = Color.from_str(f"#{hex}")
 
-        return await interaction.followup.send(embed=embed)                
+        return await interaction.followup.send(embed=embed)
 
+    @converter_group.command(name="psc1", description="Converts text into PSC-1 Encoded")
+    async def psc1(self, interaction: Interaction, text: str):
+        await interaction.response.defer(thinking=True)
+        
+        output = None
+
+        try:
+            output = ciphers.psc1(text, False)
+        except Exception as e:
+            return await interaction.followup.send(f"Error occured: {e}")
+        
+        return await interaction.followup.send(output)
+    
+    @converter_group.command(name="un_psc1", description="Decodes PSC-1 into text")
+    async def un_psc1(self, interaction: Interaction, text: str):
+        await interaction.response.defer(thinking=True)
+        
+        output = None
+
+        try:
+            output = ciphers.psc1(text, True)
+        except Exception as e:
+            return await interaction.followup.send(f"Error occured: {e}")
+        
+        return await interaction.followup.send(output)
+    
 # i will add this but not this time :(
 # https://colornames.org/search/json/?hex=FF0000
 
