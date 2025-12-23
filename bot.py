@@ -173,7 +173,11 @@ class PoxBot(commands.AutoShardedBot):
                 f"User ID: {self.user.id}",
                 f"Username: {self.user.name}",
                 f"Connected Guilds: {len(self.guilds)}",
-                f"Guilds: {", ".join([guild.name for guild in self.guilds])}"
+                f"Guilds: {", ".join([guild.name for guild in self.guilds])}",
+                f"Users: {len(self.users)}",
+                f"Commit Hash: {self.commit_hash}",
+                f"Session UUID: {self.session_uuid}",
+                f"Launch Time: {self.launch_time.isoformat()}",
             )))
         else:
             logger.info("It seems client is connected with bot, but no user object found.")

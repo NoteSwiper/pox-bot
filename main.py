@@ -22,7 +22,7 @@ intents.members = True
 
 bot = PoxBot(
     intents=intents,
-    command_prefix=commands.when_mentioned_or("pox!"),
+    command_prefix=commands.when_mentioned_or("p!"),
     owner_id=457436960655409153,
     #chunk_guilds_at_startup=False,
     #member_cache_flags=discord.MemberCacheFlags.none()

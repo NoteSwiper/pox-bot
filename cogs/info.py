@@ -52,8 +52,9 @@ class Info(commands.Cog):
             'Total Cached': f"{self.bot.cache.get_count()}",
             'Latency (ms)': round(self.bot.latency * 10000) / 100,
             'Shards': len(self.bot.shards if not self.bot.shards is None else "Standalone"),
-            'Developer': "p0x38 (NoteSwiper)",
+            'Developer': ".__38washere (__________)",
             'I can see': str(len(self.bot.users)) + " users",
+            'I can go': str(len(list(self.bot.get_all_channels()))) + " channels",
         }
         
         if platform.system() == "Linux":

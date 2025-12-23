@@ -223,7 +223,7 @@ class UserGroup(commands.Cog):
     @app_commands.guild_only()
     async def get_list_members(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
-        embed = Embed(title="Mmembers in this server",description="")
+        embed = Embed(title="Members in this server",description="")
         
         if interaction.guild:
             embed.description = ', '.join([
@@ -231,12 +231,12 @@ class UserGroup(commands.Cog):
                 for m in interaction.guild.members
             ])
         else:
-            embed.description = "You're not in guild."
+            embed.description = "This command only works in guild."
             await interaction.followup.send(embed=embed)
             return
         
         await interaction.followup.send(embed=embed)
-    
+
     @group.command(name="nick", description="Sets user's nickname")
     @app_commands.guild_only()
     async def change_nickname(self, interaction: Interaction, member: Member, new_nick: Optional[str] = None):

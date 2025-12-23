@@ -47,6 +47,11 @@ class MessageGroup(commands.Cog):
 
     group = app_commands.Group(name="message", description="An group for messages.")
 
+    @group.command(name="say", description="Makes the bot say something in current channel.")
+    @app_commands.guild_only()
+    async def say_something(self, ctx: Interaction, *, msg: str):
+        await ctx.response.send_message(f"{msg}")
+
     @group.command(name="send", description="Sends a message.")
     @app_commands.guild_only()
     async def send_message(self, interaction: Interaction, channel: TextChannel, message: str):
