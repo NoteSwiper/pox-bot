@@ -185,5 +185,28 @@ class Leaderboard(Cog):
         else:
             await interaction.followup.send("sorry, bot has no connection with Database.")
 
+    # get specified user's word count
+    @group.command(name="user_words",description="Shows specified user's word points")
+    async def user_word_count(self, interaction: Interaction, user: Member):
+        await interaction.response.defer()
+
+        embed = Embed(
+            title="User Word Points",
+            color=0x00FF00,
+        )
+
+        if not self.bot.db_connection: return await interaction.followup.send("sorry, bot has no connection with Database.")
+
+        async with self.bot.db_connection.execute("SELECT amount FROM words WHERE user_id = ?", (user.id,)) as cursor:
+            lbdata = await cursor.fetchone()
+        
+        if not lbdata:
+            embed.description = f"<@{user.id}> has no points."
+            return await interaction.followup.send(embed=embed)
+        
+        embed.description = f"<@{user.id}> has {lbdata[0]} points."
+
+        return await interaction.followup.send(embed=embed)        
+            
 async def setup(bot):
     await bot.add_cog(Leaderboard(bot))

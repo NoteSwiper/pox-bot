@@ -9,7 +9,7 @@ import os
 from typing import Optional
 import discord
 from discord.ext import commands
-from discord import Forbidden, Interaction, Member, SelectOption, TextChannel, TextStyle, app_commands
+from discord import Embed, Forbidden, Interaction, Member, Message, SelectOption, TextChannel, TextStyle, app_commands
 from bot import PoxBot
 import data
 from logger import logger
@@ -106,14 +106,14 @@ class MessageGroup(commands.Cog):
     async def delete_messages_sent_by_bot(self, ctx: Interaction, limit: int = 100):
         await ctx.response.defer()
         
-        def check_messages(m):
+        def check_messages(m: Message):
             is_bot = m.author == self.bot.user
             is_replied = False
             if m.reference and m.reference.resolved:
                 is_replied = m.reference.resolved.author == self.bot.user
-            
-            return not ctx.message and (is_bot or is_replied)
-            
+
+            return not ctx.message == m and (is_bot or is_replied)
+
         deleted_count = 0
         
         if isinstance(ctx.channel, discord.abc.GuildChannel):
@@ -165,5 +165,110 @@ class MessageGroup(commands.Cog):
                     except Forbidden as e:
                         logger.error(f"{channel.name} Forbidden")
         return interaction.followup.send(f"Sent to {send_count} of channels: "+"\n".join(sent_channels))
+    
+    @group.command(name="search", description="Searches messages in current channel.")
+    @app_commands.guild_only()
+    async def search_messages_in_channel(self, interaction: Interaction, keyword: str, limit: Optional[int] = 100):
+        await interaction.response.defer()
+        found_messages = []
+
+        if limit is None: limit = 100
+
+        if isinstance(interaction.channel, discord.TextChannel):
+            async for message in interaction.channel.history(limit=limit):
+                if keyword.lower() in message.content.lower():
+                    found_messages.append(f"- {message.author.name}: {message.content} (ID: {message.id})")
+        
+        if found_messages:
+            return await interaction.followup.send(f"Found messages:\n" + "\n".join(found_messages))
+        else:
+            return await interaction.followup.send("No messages found with that keyword.")
+    
+    @group.command(name="last", description="Fetches the last message from the current channel.")
+    @app_commands.guild_only()
+    async def fetch_last_message(self, interaction: Interaction):
+        await interaction.response.defer()
+        message = None
+        if isinstance(interaction.channel, discord.TextChannel):
+            message = interaction.channel.last_message
+        
+        embed = Embed(title="Last Message")
+
+        if message:
+            embed.title = f"Last Message sent in {interaction.channel.name if interaction.channel and isinstance(interaction.channel, discord.TextChannel) else 'Not an Text Channel'} by {message.author.name}"
+            embed.description = message.content
+            embed.set_footer(text=f"Message ID: {message.id}")
+            embed.color = discord.Color.green()
+
+            return await interaction.followup.send(embed=embed)
+        else:
+            embed.description = "No messages found in this channel."
+            embed.color = discord.Color.red()
+
+            return await interaction.followup.send(embed=embed)
+    
+    @group.command(name="first", description="Fetches the first message from the current channel.")
+    @app_commands.guild_only()
+    async def fetch_first_message(self, interaction: Interaction):
+        await interaction.response.defer()
+        message = None
+        if isinstance(interaction.channel, discord.TextChannel):
+            async for msg in interaction.channel.history(limit=1, oldest_first=True):
+                message = msg
+        
+        embed = Embed(title="First Message")
+
+        if message:
+            embed.title = f"First Message sent in {interaction.channel.name if interaction.channel and isinstance(interaction.channel, discord.TextChannel) else 'Not an Text Channel'} by {message.author.name}"
+            embed.description = message.content
+            embed.set_footer(text=f"Message ID: {message.id}")
+            embed.color = discord.Color.purple()
+
+            return await interaction.followup.send(embed=embed)
+        else:
+            embed.description = "No messages found in this channel."
+            embed.color = discord.Color.red()
+
+            return await interaction.followup.send(embed=embed)
+    
+    @group.command(name="count", description="Counts messages in the current channel.")
+    @app_commands.guild_only()
+    async def count_messages_in_channel(self, interaction: Interaction):
+        await interaction.response.defer()
+        message_count = 0
+
+        if isinstance(interaction.channel, discord.TextChannel):
+            # Using history with limit=None to count all messages
+            async for _ in interaction.channel.history(limit=None):
+                message_count += 1
+        
+        return await interaction.followup.send(f"There are {message_count} messages in this channel.")
+
+    @group.command(name="random", description="Fetches a random message from the current channel.")
+    @app_commands.guild_only()
+    async def fetch_random_message(self, interaction: Interaction):
+        await interaction.response.defer()
+        messages = []
+
+        if isinstance(interaction.channel, discord.TextChannel):
+            async for message in interaction.channel.history(limit=1000):
+                messages.append(message)
+        
+        embed = Embed(title="Random Message")
+
+        if messages:
+            random_message = random.choice(messages)
+            embed.title = f"Message by {random_message.author.name}"
+            embed.description = random_message.content
+            embed.set_footer(text=f"Message ID: {random_message.id}")
+            embed.color = discord.Color.blue()
+
+            return await interaction.followup.send(embed=embed)
+        else:
+            embed.description = "No messages found in this channel."
+            embed.color = discord.Color.red()
+
+            return await interaction.followup.send(embed=embed)
+
 async def setup(bot):
     await bot.add_cog(MessageGroup(bot))

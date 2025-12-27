@@ -1,8 +1,9 @@
 from datetime import timedelta
 import math
+import random
 from typing import Optional
 from discord.ext import commands
-from discord import Activity, ActivityType, ClientStatus, Color, CustomActivity, Embed, Forbidden, Game, HTTPException, Interaction, Member, Role, Spotify, Status, Streaming, app_commands
+from discord import Activity, ActivityType, ClientStatus, Color, CustomActivity, Embed, Forbidden, Game, HTTPException, Interaction, Member, Role, Spotify, Status, Streaming, TextChannel, app_commands
 
 from bot import PoxBot
 
@@ -122,13 +123,13 @@ class UserGroup(commands.Cog):
                     
                     e.description = "\n".join(lines)
 
-                    await interaction.followup.send(embed=e)
+                    return await interaction.followup.send(embed=e)
                 else:
-                    await interaction.followup.send("User not found.")
+                    return await interaction.followup.send("User not found.")
             else:
-                await interaction.followup.send("The command only works in guild due to issue with cache.")
+                return await interaction.followup.send("The command only works in guild due to issue with cache.")
         except Exception as e:
-            await interaction.followup.send(f"Error. {e}")
+            return await interaction.followup.send(f"Error. {e}")
             logger.error(f"Error: {e}")
     
     
@@ -140,7 +141,7 @@ class UserGroup(commands.Cog):
         embed = Embed(title=f"{member.display_name}'s Avatar")
         embed.set_image(url=member.display_avatar.url if member.display_avatar else member.default_avatar.url)
 
-        await interaction.followup.send(embed=embed)
+        return await interaction.followup.send(embed=embed)
     
     @group.command(name="kick", description="Kick a member.")
     @app_commands.checks.has_permissions(kick_members=True)
@@ -153,17 +154,17 @@ class UserGroup(commands.Cog):
         try:
             await member.kick(reason=(reason if reason is not None else "Reason not provided by issuer."))
             e.description = f"{member.name} has been kicked from the server."
-            await interaction.followup.send(embed=e)
+            return await interaction.followup.send(embed=e)
         except Forbidden:
             e.description = f"You do not have permission to kick {member.name}."
-            await interaction.followup.send(embed=e)
+            return await interaction.followup.send(embed=e)
         except HTTPException:
             e.description = f"The operation has failed."
-            await interaction.followup.send(embed=e)
+            return await interaction.followup.send(embed=e)
         except Exception as ex:
             e.description = f"Uncaught exception. {ex}"
-            await interaction.followup.send(embed=e)
-    
+            return await interaction.followup.send(embed=e)
+
     @group.command(name="ban", description="Bans member from the server")
     @app_commands.checks.has_permissions(ban_members=True)
     @app_commands.describe(member="Member to ban")
@@ -173,9 +174,9 @@ class UserGroup(commands.Cog):
         try:
             await member.ban(reason=reason)
             await member.send(f"You're banned by {ctx.user.name}.\nReason: {reason if reason else 'No reason provided'}")
-            await ctx.response.send_message(f"Banned <@{member.id}>.", ephemeral=True)
+            return await ctx.response.send_message(f"Banned <@{member.id}>.", ephemeral=True)
         except Exception as e:
-            await ctx.response.send_message(f"Failed to ban. {e}", ephemeral=True)
+            return await ctx.response.send_message(f"Failed to ban. {e}", ephemeral=True)
     
     @group.command(name="unban", description="Unbans member")
     @app_commands.checks.has_permissions(ban_members=True)
@@ -184,10 +185,10 @@ class UserGroup(commands.Cog):
     async def unban_member(self, ctx: Interaction, member: Member):
         try:
             await member.unban()
-            await ctx.response.send_message(f"Unbanned {member.name}.", ephemeral=True)
+            return await ctx.response.send_message(f"Unbanned {member.name}.", ephemeral=True)
         except Exception as e:
-            await ctx.response.send_message(f"Failed to unban. {e}", ephemeral=True)
-    
+            return await ctx.response.send_message(f"Failed to unban. {e}", ephemeral=True)
+
     @group.command(name="warn", description="Warns member")
     @app_commands.checks.has_permissions(moderate_members=True)
     @app_commands.describe(member="Member to warn")
@@ -196,9 +197,9 @@ class UserGroup(commands.Cog):
     async def warn_member(self, ctx: Interaction, member: Member, *, reason: str = ""):
         try:
             await member.send(f"You're warned by {ctx.user.name}.\n\nReason: `{reason}`")
-            await ctx.response.send_message(f"Warned <@{member.id}>.", ephemeral=True)
+            return await ctx.response.send_message(f"Warned <@{member.id}>.", ephemeral=True)
         except Exception as e:
-            await ctx.response.send_message(f"Failed to warn. {e}")
+            return await ctx.response.send_message(f"Failed to warn. {e}")
             logger.error(f"Exception occured. {e}")
     
     @group.command(name="timeout", description="Warns member")
@@ -209,7 +210,7 @@ class UserGroup(commands.Cog):
     @app_commands.guild_only()
     async def timeout_member(self, ctx: Interaction, member: Member, reason: str = '', length: int = 1):
         await member.timeout(timedelta(minutes=length), reason=f"You're timed out. \"{reason if reason else "No reason provided from source"}\", Requested by {ctx.user.name}")
-        await ctx.response.send_message(f"Timed out {member.mention} for {length} minutes.")
+        return await ctx.response.send_message(f"Timed out {member.mention} for {length} minutes.")
     
     @group.command(name="untimeout", description="Un-timeout member")
     @app_commands.checks.has_permissions(moderate_members=True)
@@ -217,7 +218,7 @@ class UserGroup(commands.Cog):
     @app_commands.guild_only()
     async def untimeout_member(self, ctx: Interaction, member: Member):
         await member.edit(timed_out_until=None)
-        await ctx.response.send_message(f"Took the timeout for {member.mention}.")
+        return await ctx.response.send_message(f"Took the timeout for {member.mention}.")
 
     @group.command(name="list", description="Returns total members")
     @app_commands.guild_only()
@@ -232,10 +233,9 @@ class UserGroup(commands.Cog):
             ])
         else:
             embed.description = "This command only works in guild."
-            await interaction.followup.send(embed=embed)
-            return
-        
-        await interaction.followup.send(embed=embed)
+            return await interaction.followup.send(embed=embed)
+
+        return await interaction.followup.send(embed=embed)
 
     @group.command(name="nick", description="Sets user's nickname")
     @app_commands.guild_only()
@@ -260,7 +260,7 @@ class UserGroup(commands.Cog):
 
         e = Embed(title=f"`{member.name}`'s status",description=f"<@{member.id}> is {result}!")
 
-        await interaction.followup.send(embed=e)
+        return await interaction.followup.send(embed=e)
     
     @group.command(name="remaining", description="Returns remaining members to reach a goal value.")
     @app_commands.guild_only()
@@ -286,7 +286,139 @@ class UserGroup(commands.Cog):
             embed.description = f"The server needs {remaining} more members to reach the goal of {goal} members."
             embed.color = Color.blurple()
 
-        await interaction.followup.send(embed=embed)
+        return await interaction.followup.send(embed=embed)
+    
+    @group.command(name="search_messages", description="Searches messages sent by specified user in the current channel.")
+    @app_commands.guild_only()
+    @app_commands.describe(member="Member to search messages for.")
+    @app_commands.describe(keyword="Keyword to search for in messages.")
+    async def search_user_messages(self, interaction: Interaction, member: Member, keyword: str):
+        await interaction.response.defer(thinking=True)
+        if interaction.channel is None:
+            return await interaction.followup.send("This command can only be used in guild channels.")
+        
+        messages = []
+
+        if isinstance(interaction.channel, TextChannel):
+            async for msg in interaction.channel.history(limit=24):
+                if msg.author.id == member.id and keyword.lower() in msg.content.lower():
+                    messages.append(msg)
+        
+        embed = Embed(title=f"Messages by {member.display_name} containing '{keyword}'", description="")
+
+        if messages:
+            lines = []
+            for msg in messages:
+                lines.append(f"- [{msg.created_at.strftime('%Y-%m-%d %H:%M:%S')}](https://discord.com/channels/{msg.guild.id}/{msg.channel.id}/{msg.id}): {msg.content}")
+            
+            embed.description = "\n".join(lines)
+            embed.color = Color.blue()
+        else:
+            embed.description = f"No messages found by {member.display_name} containing '{keyword}'."
+            embed.color = Color.red()
+
+        return await interaction.followup.send(embed=embed)
+    
+    @group.command(name="first_message", description="Gets the first message sent by specified user in the current channel.")
+    @app_commands.guild_only()
+    @app_commands.describe(member="Member to get first message for.")
+    async def get_first_user_message(self, interaction: Interaction, member: Member):
+        await interaction.response.defer(thinking=True)
+        if interaction.channel is None:
+            return await interaction.followup.send("This command can only be used in guild channels.")
+        
+        first_message = None
+
+        if isinstance(interaction.channel, TextChannel):
+            async for msg in interaction.channel.history(limit=5, oldest_first=True):
+                if msg.author.id == member.id:
+                    first_message = msg
+                    break
+        
+        embed = Embed(title=f"First message by {member.display_name}", description="")
+
+        if first_message:
+            embed.description = f"[{first_message.created_at.strftime('%Y-%m-%d %H:%M:%S')}](https://discord.com/channels/{first_message.guild.id}/{first_message.channel.id}/{first_message.id}): {first_message.content}"
+            embed.color = Color.blue()
+        else:
+            embed.description = f"No messages found by {member.display_name} in this channel."
+            embed.color = Color.red()
+
+        return await interaction.followup.send(embed=embed)
+
+    @group.command(name="latest_message", description="Gets the latest message sent by specified user in the current channel.")
+    @app_commands.guild_only()
+    @app_commands.describe(member="Member to get latest message for.")
+    async def get_latest_user_message(self, interaction: Interaction, member: Member):
+        await interaction.response.defer(thinking=True)
+        if interaction.channel is None:
+            return await interaction.followup.send("This command can only be used in guild channels.")
+        
+        latest_message = None
+
+        if isinstance(interaction.channel, TextChannel):
+            async for msg in interaction.channel.history(limit=1):
+                if msg.author.id == member.id:
+                    latest_message = msg
+                    break
+        
+        embed = Embed(title=f"Latest message by {member.display_name}", description="")
+
+        if latest_message:
+            embed.description = f"[{latest_message.created_at.strftime('%Y-%m-%d %H:%M:%S')}](https://discord.com/channels/{latest_message.guild.id}/{latest_message.channel.id}/{latest_message.id}): {latest_message.content}"
+            embed.color = Color.blue()
+        else:
+            embed.description = f"No messages found by {member.display_name} in this channel."
+            embed.color = Color.red()
+
+        return await interaction.followup.send(embed=embed)
+    
+    @group.command(name="random_message", description="Gets a random message sent by specified user in the current channel.")
+    @app_commands.guild_only()
+    @app_commands.describe(member="Member to get random message for.")
+    async def get_random_user_message(self, interaction: Interaction, member: Member):
+        await interaction.response.defer(thinking=True)
+        if interaction.channel is None:
+            return await interaction.followup.send("This command can only be used in guild channels.")
+        
+        user_messages = []
+
+        if isinstance(interaction.channel, TextChannel):
+            async for msg in interaction.channel.history(limit=100):
+                if msg.author.id == member.id:
+                    user_messages.append(msg)
+        
+        embed = Embed(title=f"Random message by {member.display_name}", description="")
+
+        if user_messages:
+            random_message = random.choice(user_messages)
+            embed.description = f"[{random_message.created_at.strftime('%Y-%m-%d %H:%M:%S')}](https://discord.com/channels/{random_message.guild.id}/{random_message.channel.id}/{random_message.id}): {random_message.content}"
+            embed.color = Color.blue()
+        else:
+            embed.description = f"No messages found by {member.display_name} in this channel."
+            embed.color = Color.red()
+
+        return await interaction.followup.send(embed=embed)
+    
+    @group.command(name="pepo", description="check if this dude is pepo")
+    @app_commands.guild_only()
+    async def is_pepo(self, interaction: Interaction, member: Member):
+        await interaction.response.defer(thinking=True)
+        e = Embed(title="Pepo Detector")
+
+        if member.id == 1100132559851098163:
+            e.description = f"Yes, <@{member.id}> is pepo."
+        else:
+            e.description = f"No, <@{member.id}> is not pepo."
+        
+        return await interaction.followup.send(embed=e)
+
+    @group.command(name="hash", description="Get user's hash code.")
+    @app_commands.guild_only()
+    async def get_user_hash(self, interaction: Interaction, member: Member):
+        await interaction.response.defer(thinking=True)
+        e = Embed(title="User Hash Code", description=f"`{hash(member)}`")
+        return await interaction.followup.send(embed=e)
 
 async def setup(bot):
     await bot.add_cog(UserGroup(bot))

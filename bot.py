@@ -298,6 +298,8 @@ class PoxBot(commands.AutoShardedBot):
         pox_count = 0
         separated_words = message.content.lower().split(" ")
 
+        logger.debug(f"[{message.author.id}.{message.guild.id if message.guild else '0'}.{message.channel.id if message.channel else '0'}] {len(separated_words)} words (@{message.author.name})")
+
         if self.db_connection and self.user:
             if not message.author.bot or not message.author.system:
                 # log messages for making graphs of chat count in days or hours if i can
