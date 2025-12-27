@@ -160,11 +160,11 @@ class XPSystem(commands.Cog):
         )
         embed.set_thumbnail(url=target.avatar.url if target.avatar else target.default_avatar.url)
 
-        embed.add_field(name="Current Level", value=f"{level}", inline=True)
-        embed.add_field(name="Current XP", value=f"{xp}", inline=True)
+        embed.add_field(name="Current Level", value=f"{level:,}", inline=True)
+        embed.add_field(name="Current XP", value=f"{xp:,}", inline=True)
         embed.add_field(
-            name=f"XP to Level {level + 1}",
-            value=f"{xp_next - xp} XP required",
+            name=f"XP to Level {level + 1:,}",
+            value=f"{xp_next - xp:,} XP required",
             inline=True
         )
         embed.add_field(
@@ -173,8 +173,7 @@ class XPSystem(commands.Cog):
             inline=False
         )
 
-        embed.set_footer(text=f"Total XP needed for Lvl {level + 1}: {xp_next}")
-
+        embed.set_footer(text=f"Total XP needed for Lvl {level + 1:,}: {xp_next:,}")
         await interaction.response.send_message(embed=embed)
 async def setup(bot):
     await bot.add_cog(XPSystem(bot))

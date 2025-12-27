@@ -4,9 +4,11 @@ from enum import Enum
 import random
 import re
 import string
+import textwrap
 import time
 import os
 from typing import Optional
+from attr import has
 import discord
 from discord.ext import commands
 from discord import Embed, Forbidden, Interaction, Member, Message, SelectOption, TextChannel, TextStyle, app_commands
@@ -14,6 +16,7 @@ from bot import PoxBot
 import data
 from logger import logger
 import stuff
+from textwrap import shorten
 
 class DMSendModal(discord.ui.Modal):
     def __init__(self, enable_sent_by: bool|None, member) -> None:
@@ -104,16 +107,18 @@ class MessageGroup(commands.Cog):
     @app_commands.check(stuff.is_bot_owner)
     @app_commands.guild_only()
     async def delete_messages_sent_by_bot(self, ctx: Interaction, limit: int = 100):
-        await ctx.response.defer()
-        
         def check_messages(m: Message):
             is_bot = m.author == self.bot.user
             is_replied = False
-            if m.reference:
-                if m.reference.resolved:
+            if m.reference and m.reference.resolved:
+                if hasattr(m.reference.resolved, 'author'):
                     is_replied = m.reference.resolved.author == self.bot.user
+            
+            if ctx.message:
+                if m.id == ctx.message.id:
+                    return False
 
-            return not ctx.message == m and (is_bot or is_replied)
+            return (is_bot or is_replied)
 
         deleted_count = 0
         
@@ -125,8 +130,8 @@ class MessageGroup(commands.Cog):
                     if len(deleted) < limit:
                         break
                 
-            await ctx.followup.send(f"Deleted {deleted_count} messages including the messages that replied to me.", ephemeral=True)
-            
+            await ctx.response.send_message(content=f"Deleted {deleted_count} messages including the messages that replied to me.")
+
     @group.command(name="uwu", description="Sends a message to everyone that you did")
     @app_commands.describe(msg="Message to send")
     async def uwuified_say_something(self, ctx: Interaction, *, msg: str):
@@ -173,19 +178,26 @@ class MessageGroup(commands.Cog):
         await interaction.response.defer()
         found_messages = []
 
-        if limit is None: limit = 100
-        else: limit = stuff.clamp(limit, 1,100)
+        if limit is None: limit = 1000
+        else: limit = stuff.clamp(limit, 1,1000)
 
         if isinstance(interaction.channel, discord.TextChannel):
-            async for message in interaction.channel.history(limit=None):
+            async for message in interaction.channel.history(limit=limit):
                 if keyword.lower() in message.content.lower():
-                    found_messages.append(f"- {message.author.name}: {message.content} (ID: {message.id})")
+                    logger.debug(f"Found message: {message.content} by {message.author.name}")
+                    found_messages.append(f"- {message.author.name}: {stuff.crop_word(message.content, keyword) or textwrap.shorten(message.content, width=30)} (ID: {message.id})")
         
+        embed = Embed(title="Search Results")
+
         if found_messages:
-            return await interaction.followup.send(f"Found messages:\n" + "\n".join(found_messages))
+            embed.description = "\n".join(found_messages)
+            embed.color = discord.Color.green()
+            return await interaction.followup.send(embed=embed)
         else:
-            return await interaction.followup.send("No messages found with that keyword.")
-    
+            embed.description = f"No messages found containing '{keyword}'."
+            embed.color = discord.Color.red()
+            return await interaction.followup.send(embed=embed)
+ 
     @group.command(name="last", description="Fetches the last message from the current channel.")
     @app_commands.guild_only()
     async def fetch_last_message(self, interaction: Interaction):

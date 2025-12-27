@@ -1,6 +1,9 @@
-from typing import Optional
-from discord import Embed, Forbidden, Guild, Interaction, Member, NotFound, app_commands
+import asyncio
+from typing import Optional, Union
+from discord import Color, Embed, Forbidden, Guild, Interaction, Member, NotFound, app_commands
 from discord.ext.commands import Cog, guild_only
+
+from data import MemberFetchStatus
 
 from bot import PoxBot
 from logger import logger
@@ -21,7 +24,7 @@ async def get_all_guild_members(guild: Guild):
             logger.exception(e)
             return cached_members
 
-async def get_reliable_member(guild: Guild, user_id: int) -> Optional[Member]:
+async def get_reliable_member(guild: Guild, user_id: int) -> tuple[MemberFetchStatus, Member | None]:
     """
     Tries to get a member from the cache, falling back to an API fetch if necessary.
     Returns the discord.Member object or None if the member is not found.
@@ -31,7 +34,7 @@ async def get_reliable_member(guild: Guild, user_id: int) -> Optional[Member]:
     member = guild.get_member(user_id)
     if member is not None:
         logger.info("Member found in cache! :D")
-        return member
+        return MemberFetchStatus.CACHED, member
 
     # 2. Fallback to API Fetch (Reliable)
     logger.warning("Member not in cache. Fetching from API...")
@@ -39,18 +42,18 @@ async def get_reliable_member(guild: Guild, user_id: int) -> Optional[Member]:
         # This guarantees accuracy but requires an API call (and must be awaited)
         member = await guild.fetch_member(user_id) 
         logger.info("Member successfully fetched! (:")
-        return member
+        return MemberFetchStatus.FETCHED, member
     except NotFound:
         # This is the expected exception if the user is NOT in the guild
         logger.error("User is NOT in the guild/server.")
-        return None
+        return MemberFetchStatus.NOT_IN_GUILD, None
     except Forbidden:
         # This happens if the bot is missing the 'Members Intent'
         logger.error("Error: Bot is missing the 'Members Intent' or required permissions! :c")
-        return None
+        return MemberFetchStatus.BOT_PERMISSION_MISSING, None
     except Exception as e:
         logger.exception(f"An unexpected error occurred during fetch: {e}")
-        return None
+        return MemberFetchStatus.ERROR, None
 
 class Leaderboard(Cog):
     def __init__(self, bot):
@@ -71,7 +74,7 @@ class Leaderboard(Cog):
                 desc = "No one has said \"pox\" yet."
             else:
                 for i, (id,count) in enumerate(lbdata,1):
-                    desc += f"{i}. <@{id}>: {int(count)} times!\n"
+                    desc += f"{i}. <@{id}>: {int(count):,} times!\n"
             
             e = Embed(
                 title="**Pox Leaderboard**",
@@ -95,7 +98,7 @@ class Leaderboard(Cog):
             desc = ""
 
             if lbdata:
-                desc = f"You have {lbdata[0]} points."
+                desc = f"You have {lbdata[0]:,} points."
             else:
                 desc = "Nothing you got."
             
@@ -118,7 +121,7 @@ class Leaderboard(Cog):
                 desc = "No one has said \"any words\" yet."
             else:
                 for i, (id,count) in enumerate(lbdata,1):
-                    desc += f"{i}. <@{id}>: {int(count)} times!\n"
+                    desc += f"{i}. <@{id}>: {int(count):,} times!\n"
             
             e = Embed(
                 title="**Word Leaderboard**",
@@ -141,14 +144,38 @@ class Leaderboard(Cog):
             return
         
         if self.bot.db_connection:
+            message = await interaction.followup.send("Database connection is active; Fetching members...", wait=True)
+
             async with self.bot.db_connection.execute("SELECT user_id, amount FROM words ORDER BY amount DESC LIMIT 32") as cursor:
                 lbdata = await cursor.fetchall()
             
             desc = ""
-            
+            finished = False
+
+            max_count = 0
+            processed = 0
+
+            # Make the loading update task asynchronous
+            async def update_loading_message():
+                nonlocal processed
+                while not finished:
+                    embed = Embed(
+                        title="**Word Leaderboard**",
+                        description=f"Checking member... ({processed}/{len(lbdata)})",
+                        color=Color.blurple(),
+                    )
+                    embed.set_footer(text="The leaderboard database were stored in host computer.")
+
+                    await message.edit(embed=embed)
+                    await asyncio.sleep(.75) # To avoid rate limits
+
+            loading_task = asyncio.create_task(update_loading_message())
+
+
             if len(lbdata) == 0:
                 desc = "No one has said \"any words\" yet."
-            else:                
+            else:
+                max_count = len(lbdata)
                 lines = []
 
                 for i, (user_id, count) in enumerate(lbdata, 1):
@@ -164,11 +191,17 @@ class Leaderboard(Cog):
                         continue
                     """
 
-                    member_found = await get_reliable_member(interaction.guild, user_id)
+                    status, member_found = await get_reliable_member(interaction.guild, user_id)
+
+                    processed += 1
 
                     if member_found:
-                        lines.append(f"{i}. <@{user_id}>: **{int(count)}** times!")
+                        lines.append(f"{i}. <@{user_id}>: **{int(count):,}** times!")
                 
+                finished = True
+                await asyncio.sleep(1)
+                loading_task.cancel()
+
                 desc = "\n".join(lines)
 
                 if not desc:
@@ -177,13 +210,18 @@ class Leaderboard(Cog):
             e = Embed(
                 title="**Word Leaderboard**",
                 description=desc,
-                color=0xFFA500,
+                color=Color.gold(),
             )
             e.set_footer(text="The leaderboard database were stored in host computer.")
             
-            await interaction.followup.send(embed=e)
+            return await interaction.followup.edit_message(message.id, embed=e)
         else:
-            await interaction.followup.send("sorry, bot has no connection with Database.")
+            embed = Embed(
+                title="**Word Leaderboard**",
+                description="Database connection is not active.",
+                color=Color.red(),
+            )
+            return await interaction.followup.send(embed=embed)
 
     # get specified user's word count
     @group.command(name="user_words",description="Shows specified user's word points")
@@ -204,7 +242,7 @@ class Leaderboard(Cog):
             embed.description = f"<@{user.id}> has no points."
             return await interaction.followup.send(embed=embed)
         
-        embed.description = f"<@{user.id}> has {lbdata[0]} points."
+        embed.description = f"<@{user.id}> has {lbdata[0]:,} points."
 
         return await interaction.followup.send(embed=embed)        
             

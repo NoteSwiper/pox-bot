@@ -174,6 +174,14 @@ def setup_database(database):
             timestamp REAL
         )
     """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS xp (
+            user_id TEXT INTEGER PRIMARY KEY,
+            xp INTEGER,
+            level INTEGER,
+            last_xp_gain REAL
+        )
+    """)
     # cursor.execute("""
     #     CREATE TABLE IF NOT EXISTS messages (
     #         id INTEGER PRIMARY KEY,
@@ -574,3 +582,18 @@ def expand_hex(short: str) -> str:
     expanded = f"{r}{r}{g}{g}{b}{b}"
 
     return expanded
+
+def crop_word(text, needle_word, padding=8, emphasis=True):
+    start = text.lower().find(needle_word.lower())
+    if start == -1: return None
+
+    if emphasis:
+        # emphasis the needle word in text
+        needle_len = len(needle_word)
+        text = (text[:start] + "**" + text[start:start+needle_len] + "**" + text[start+needle_len:])
+        start += 2  # account for added asterisks
+
+    low = max(0, start - padding)
+    high = min(len(text), start + len(needle_word) + padding)
+
+    return text[low:high]

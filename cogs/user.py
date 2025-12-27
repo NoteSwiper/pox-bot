@@ -1,14 +1,19 @@
+import asyncio
 from datetime import timedelta
 import math
 import random
 from typing import Optional
 from discord.ext import commands
 from discord import Activity, ActivityType, ClientStatus, Color, CustomActivity, Embed, Forbidden, Game, HTTPException, Interaction, Member, Role, Spotify, Status, Streaming, TextChannel, app_commands
+from os.path import exists, join
 
 from bot import PoxBot
 
 from cogs import checker
 from logger import logger
+from textwrap import shorten
+
+from stuff import crop_word
 
 def format_status(client_status: ClientStatus):
     result = ""
@@ -114,7 +119,7 @@ class UserGroup(commands.Cog):
                     lines = []
 
                     for key,value in temp1.items():
-                        lines.append(f"{key}: {value}")
+                        e.add_field(name=key, value=value, inline=True)
 
                     if user.display_avatar:
                         e.set_thumbnail(url=user.display_avatar.url)
@@ -288,6 +293,36 @@ class UserGroup(commands.Cog):
 
         return await interaction.followup.send(embed=embed)
     
+    @group.command(name="find_first_message_contains", description="Finds the first message sent by specified user containing the keyword in the current channel.")
+    @app_commands.guild_only()
+    @app_commands.describe(member="Member to search messages for.")
+    @app_commands.describe(keyword="Keyword to search for in messages.")
+    async def find_first_message_contains(self, interaction: Interaction, member: Member, keyword: str):
+        await interaction.response.defer(thinking=True)
+        if interaction.channel is None:
+            return await interaction.followup.send("This command can only be used in guild channels.")
+        
+        first_message = None
+
+        if isinstance(interaction.channel, TextChannel):
+            async for msg in interaction.channel.history(limit=None, oldest_first=True):
+                if msg.author.id == member.id and keyword.lower() in msg.content.lower():
+                    first_message = msg
+                    break
+
+                await asyncio.sleep(0.5)
+                
+        embed = Embed(title=f"First message by {member.display_name} containing '{keyword}'", description="")
+
+        if first_message:
+            embed.description = f"[{first_message.created_at.strftime('%Y-%m-%d %H:%M:%S')}](https://discord.com/channels/{first_message.guild.id}/{first_message.channel.id}/{first_message.id}): {first_message.content}"
+            embed.color = Color.blue()
+        else:
+            embed.description = f"No messages found by {member.display_name} containing '**{keyword}**'."
+            embed.color = Color.red()
+
+        return await interaction.followup.send(embed=embed)
+    
     @group.command(name="search_messages", description="Searches messages sent by specified user in the current channel.")
     @app_commands.guild_only()
     @app_commands.describe(member="Member to search messages for.")
@@ -301,23 +336,24 @@ class UserGroup(commands.Cog):
 
         if isinstance(interaction.channel, TextChannel):
             async for msg in interaction.channel.history(limit=None):
-                if msg.author.id == member.id and keyword.lower() in msg.content.lower():
-                    # break the loop if messages count is more than 50
-                    if len(messages) >= 50:
-                        break
+                if len(messages) >= 15:
+                    break
 
+                if msg.author.id == member.id and keyword.lower() in msg.content.lower():
+                    logger.debug(f"Found message: {msg.content} by {msg.author.name}")
                     messages.append(msg)
+        
         embed = Embed(title=f"Messages by {member.display_name} containing '{keyword}'", description="")
 
         if messages:
             lines = []
             for msg in messages:
-                lines.append(f"- [{msg.created_at.strftime('%Y-%m-%d %H:%M:%S')}](https://discord.com/channels/{msg.guild.id}/{msg.channel.id}/{msg.id}): {msg.content}")
+                lines.append(f"- [{msg.created_at.strftime('%Y-%m-%d %H:%M:%S')}](https://discord.com/channels/{msg.guild.id}/{msg.channel.id}/{msg.id}): {crop_word(msg.content, keyword) or shorten(msg.content, width=30)}")
             
             embed.description = "\n".join(lines)
             embed.color = Color.blue()
         else:
-            embed.description = f"No messages found by {member.display_name} containing '{keyword}'."
+            embed.description = f"No messages found by {member.display_name} containing '**{keyword}**'."
             embed.color = Color.red()
 
         return await interaction.followup.send(embed=embed)

@@ -1,3 +1,4 @@
+from enum import IntEnum, auto
 import re, json
 
 with open("emoticons.txt", 'r', encoding="utf-8") as f:
@@ -8,6 +9,13 @@ def get_contributors():
         contributors_data = json.load(f)
     
     return contributors_data
+
+class MemberFetchStatus(IntEnum):
+    CACHED = auto()
+    FETCHED = auto()
+    NOT_IN_GUILD = auto()
+    BOT_PERMISSION_MISSING = auto()
+    ERROR = auto()
 
 possible_map = {
     1: "Nuh uh.",

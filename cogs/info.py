@@ -46,15 +46,15 @@ class Info(commands.Cog):
             'Bot Version': f"git+{commit_hash} {last_commit_message}; {namesignature}" if commit_hash else "Unknown",
             'Platform': "Unknown",
             'Latency (ms)': f"{round(self.bot.latency * 1000)} ms",
-            'Shard': f"{self.bot.shard_id} / {len(self.bot.shards)}" if self.bot.shard_id is not None else "Standalone",
+            'Shard': f"{self.bot.shard_id} / {len(self.bot.shards):,}" if self.bot.shard_id is not None else "Standalone",
             'Bot Developer': "\\_\\_\\_\\_\\_",
-            'Servers that am in': f"{len(self.bot.guilds)} servers",
-            'Messages I seen': f"{self.bot.handled_messages} messages",
-            'Interactions I processed': f"processed {self.bot.processed_interactions}, failed {self.bot.failed_interactions}",
-            'Users I see': str(len(self.bot.users)) + " users",
-            'Channels I can read': str(len(list(self.bot.get_all_channels()))) + " channels",
-            'Messages I can validate': f"{len(self.bot.cached_messages)} messages",
-            'Data I can retrieve': f"{self.bot.cache.get_count()} values",
+            'Servers that am in': f"{len(self.bot.guilds):,} servers",
+            'Messages I seen': f"{self.bot.handled_messages:,} messages",
+            'Interactions I processed': f"processed {self.bot.processed_interactions:,}, failed {self.bot.failed_interactions:,}",
+            'Users I see': f"{len(self.bot.users):,} users",
+            'Channels I can read': f"{len(list(self.bot.get_all_channels())):,} channels",
+            'Messages I can validate': f"{len(self.bot.cached_messages):,} messages",
+            'Data I can retrieve': f"{self.bot.cache.get_count():,} values",
         }
         
         if platform.system() == "Linux":
