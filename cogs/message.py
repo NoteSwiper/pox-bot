@@ -109,8 +109,9 @@ class MessageGroup(commands.Cog):
         def check_messages(m: Message):
             is_bot = m.author == self.bot.user
             is_replied = False
-            if m.reference and m.reference.resolved:
-                is_replied = m.reference.resolved.author == self.bot.user
+            if m.reference:
+                if m.reference.resolved:
+                    is_replied = m.reference.resolved.author == self.bot.user
 
             return not ctx.message == m and (is_bot or is_replied)
 
@@ -173,9 +174,10 @@ class MessageGroup(commands.Cog):
         found_messages = []
 
         if limit is None: limit = 100
+        else: limit = stuff.clamp(limit, 1,100)
 
         if isinstance(interaction.channel, discord.TextChannel):
-            async for message in interaction.channel.history(limit=limit):
+            async for message in interaction.channel.history(limit=None):
                 if keyword.lower() in message.content.lower():
                     found_messages.append(f"- {message.author.name}: {message.content} (ID: {message.id})")
         

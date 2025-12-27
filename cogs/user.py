@@ -300,10 +300,13 @@ class UserGroup(commands.Cog):
         messages = []
 
         if isinstance(interaction.channel, TextChannel):
-            async for msg in interaction.channel.history(limit=24):
+            async for msg in interaction.channel.history(limit=None):
                 if msg.author.id == member.id and keyword.lower() in msg.content.lower():
+                    # break the loop if messages count is more than 50
+                    if len(messages) >= 50:
+                        break
+
                     messages.append(msg)
-        
         embed = Embed(title=f"Messages by {member.display_name} containing '{keyword}'", description="")
 
         if messages:
@@ -324,13 +327,13 @@ class UserGroup(commands.Cog):
     @app_commands.describe(member="Member to get first message for.")
     async def get_first_user_message(self, interaction: Interaction, member: Member):
         await interaction.response.defer(thinking=True)
-        if interaction.channel is None:
+        if interaction.channel is None or interaction.guild is None:
             return await interaction.followup.send("This command can only be used in guild channels.")
         
         first_message = None
 
         if isinstance(interaction.channel, TextChannel):
-            async for msg in interaction.channel.history(limit=5, oldest_first=True):
+            async for msg in interaction.channel.history(limit=None, oldest_first=True):
                 if msg.author.id == member.id:
                     first_message = msg
                     break
@@ -351,7 +354,7 @@ class UserGroup(commands.Cog):
     @app_commands.describe(member="Member to get latest message for.")
     async def get_latest_user_message(self, interaction: Interaction, member: Member):
         await interaction.response.defer(thinking=True)
-        if interaction.channel is None:
+        if interaction.channel is None or interaction.guild is None:
             return await interaction.followup.send("This command can only be used in guild channels.")
         
         latest_message = None
@@ -384,7 +387,7 @@ class UserGroup(commands.Cog):
         user_messages = []
 
         if isinstance(interaction.channel, TextChannel):
-            async for msg in interaction.channel.history(limit=100):
+            async for msg in interaction.channel.history(limit=None):
                 if msg.author.id == member.id:
                     user_messages.append(msg)
         

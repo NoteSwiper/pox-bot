@@ -345,7 +345,6 @@ class PoxBot(commands.AutoShardedBot):
             if inter.command_failed:
                 self.failed_interactions += 1
                 logger.error("The requested command thrown error!")
-                
 
     async def close(self) -> None:
         async with aiofiles.open("data/blacklisted_words.json", 'w+') as f:

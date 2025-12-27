@@ -1,7 +1,13 @@
-import re
+import re, json
 
 with open("emoticons.txt", 'r', encoding="utf-8") as f:
     emoticons = f.read().split("\n")
+
+def get_contributors():
+    with open('resources/contributors.json', 'r', encoding="utf-8") as f:
+        contributors_data = json.load(f)
+    
+    return contributors_data
 
 possible_map = {
     1: "Nuh uh.",

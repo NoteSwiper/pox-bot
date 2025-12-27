@@ -43,20 +43,6 @@ class Generators(Cog):
         except Exception as e:
             await ctx.response.send_message(f"err.type=null.error. {e}")
     
-    @group.command(name="annayarik13alt", description=":3 (The image belongs to yarik999.999)")
-    async def cat_annayarik13alt(self, interaction: Interaction):
-        embed = Embed(title="Special thanks to AnnaYarik13Alt", description="He helped me suggesting the commands")
-        embed.set_image(url="attachment://cat.jpg")
-        embed.set_footer(text="Image credit by `yarik999.999`. (AnnaYarik13Alt, i guess)")
-        
-        path = join(dirname(__file__), "../resources/cat_anna.jpg")
-
-        with open(path, 'rb') as f:
-            pic = File(f, filename="cat.jpg")
-
-        if embed:
-            await interaction.response.send_message(embed=embed,file=pic)
-    
     @group.command(name="cat_jard", description="evade")
     async def cat_jard(self, interaction: Interaction):
         embed = Embed()
