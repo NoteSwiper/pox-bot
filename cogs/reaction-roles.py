@@ -2,7 +2,7 @@
 import time
 import discord
 from discord.ext import commands, tasks
-from discord import Activity, ActivityType, Color, CustomActivity, Embed, Emoji, Interaction, InteractionType, Message, Role, Status, TextChannel, app_commands
+from discord import Color, Interaction, Role, TextChannel, app_commands
 
 import lmstudio as lms
 

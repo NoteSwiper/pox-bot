@@ -1,23 +1,25 @@
 import asyncio
 import datetime
 import os
+from pathlib import Path
 import random
 import re
 import subprocess
 from time import time
 import uuid
-import aioconsole
 import aiomysql
 import discord
 from discord.ext import commands
 from gtts.lang import tts_langs
-import websockets
-from classes import Cache, EmoticonGenerator
+from prompt_toolkit import PromptSession
+from prompt_toolkit.patch_stdout import patch_stdout
+from classes import Cache, EmoticonGenerator, MyTranslator
 import stuff
 import data
 import aiosqlite
 import profanityfilter
 import roblox
+import websockets
 from logger import logger, interact_logger
 from discord import Forbidden, HTTPException, Interaction, MissingApplicationID, TextChannel, app_commands
 
@@ -76,9 +78,20 @@ class PoxBot(commands.AutoShardedBot):
         self.custom_activity = os.path.join(self.root_path, "resources/what_2.txt")
         self.server_data2 = {}
         self.server_data2_loaded = False
-
+        self.auth_code = str(random.randint(10000000,99999999))
+        self.EXCLUDE_EXTENSIONS = [
+            "chat",
+            "log",
+        ]
+    
     async def setup_hook(self):
         stuff.setup_database("./leaderboard.db")
+        # set a translator for app commands (async API)
+        try:
+            await self.tree.set_translator(MyTranslator())
+        except Exception:
+            # ignore if setting translator fails for any reason
+            logger.exception("Failed to set command translator")
         
         self.db_connection = await aiosqlite.connect("./leaderboard.db")
 
@@ -128,6 +141,14 @@ class PoxBot(commands.AutoShardedBot):
         except json.JSONDecodeError:
             logger.error("server_data2.json is empty or invalid.")
             self.server_data2 = {}
+
+        try:
+            async with self.db_connection.execute("SELECT total FROM counts WHERE id = 1") as cursor:
+                row = await cursor.fetchone()
+                if row:
+                    self.handled_messages = row[0]
+        except Exception as e:
+            logger.exception(e)
         
         """
         try:
@@ -152,6 +173,10 @@ class PoxBot(commands.AutoShardedBot):
             if fname.endswith('.py'):
                 logger.debug(f"Loading extension {fname[:-3]}.")
 
+                if fname[:-3] in self.EXCLUDE_EXTENSIONS:
+                    logger.warning("This extension has excluded from loading.")
+                    continue
+
                 try:
                     await self.load_extension(f"cogs.{fname[:-3]}")
                     logger.debug(f"Successfully loaded {fname[:-3]}.")
@@ -167,6 +192,7 @@ class PoxBot(commands.AutoShardedBot):
                     logger.exception(f"Uncaught exception thrown while reloading, due to {e}.")
 
     async def on_ready(self):
+        logger.info("Auth-code is {}".format(self.auth_code))
         if self.user:
             logger.info("\n".join((
                 "The client is logged into a bot!",
@@ -195,12 +221,10 @@ class PoxBot(commands.AutoShardedBot):
             logger.exception("TranslationError: Error occured while translating commands")
         except HTTPException:
             logger.error("HTTPException: Failed to sync commands")
-    
+
     async def on_message(self,message: discord.Message):
-        self.handled_messages += 1
-        
         if message.author == self.user or message.mention_everyone: return
-        
+
         if message.guild:
             blacklisted_words = self.blacklisted_words.get(str(message.guild.id))
             
@@ -272,21 +296,51 @@ class PoxBot(commands.AutoShardedBot):
                             with open(url2, 'rb') as f:
                                 pic = discord.File(f,"nah.jpg")
                             
-                            e = discord.Embed()
-                            e.set_image(url="attachment://nah.jpg")
-                            await message.reply(file=pic,embed=e)
+                            await message.reply(file=pic)
                             self.already_said = True
                         else:
+                            is_found = False
+                            for pattern, response_data in data.responses.items():
+                                result = re.search(pattern, prompt)
+
+                                if result:
+                                    image_path = response_data.get("image_path")
+                                    text_response = response_data.get("response")
+
+                                    if not text_response or not isinstance(text_response, str): continue
+
+                                    try:
+                                        if image_path:
+                                            async with aiofiles.open(os.path.join(os.path.dirname(__file__), image_path), 'rb') as f:
+                                                d = await f.read()
+
+                                            ext = Path(image_path).suffix
+                                            pic = discord.File(d, f"{int(time())}{ext}")
+
+                                            await message.reply(text_response, file=pic)
+                                            self.already_said = True
+                                        else:
+                                            await message.reply(text_response)
+                                            self.already_said = True
+                                    except Exception as e:
+                                        logger.exception(f"Error occured: {e}")
+                                        await message.reply(f"Error occured: {e}")
+                                break
+
                             for pattern, index in null_interactions.items():
+                                if is_found: break
+
                                 result = re.search(pattern, prompt)
                                 if result:
                                     if index['type'] == "single":
                                         inded = null_messages[index['index']]
+                                        is_found = True
                                         if inded is not None:
                                             await message.reply(inded)
                                     elif index['type'] == "multi":
                                         for indexindex, index2 in enumerate(index['index']):
                                             indeed = null_messages[index2]
+                                            is_found = True
                                             await message.reply(indeed)
                                             if indexindex != len(index['index']) - 1:
                                                 await asyncio.sleep(random.uniform(1.0,2.5))
@@ -302,10 +356,20 @@ class PoxBot(commands.AutoShardedBot):
 
         if self.db_connection and self.user:
             if not message.author.bot or not message.author.system:
+                self.handled_messages += 1
+
                 # log messages for making graphs of chat count in days or hours if i can
                 # I'm not doing bad things, trust me
                 # await self.db_connection.execute("INSERT INTO messages (id, content, user_id, timestamp, channel) VALUES (?, ?, ?, ?, ?)", (message.id, message.content, message.author.id, message.created_at.timestamp(), message.channel.id))
                 
+                async with self.db_connection.execute("SELECT total FROM counts") as cursor:
+                    result123 = await cursor.fetchone()
+                
+                if result123:
+                    await self.db_connection.execute("UPDATE counts SET total = total + 1 WHERE id = 1")
+                else:
+                    await self.db_connection.execute("INSERT OR IGNORE INTO counts (id, total) VALUES (1, 0)")
+
                 user_id = str(message.author.id)
                 if separated_words:
                     if self.db_connection:

@@ -1,15 +1,8 @@
-import json
-import random
-import string
 import time
-import discord
 from discord.ext import commands, tasks
-from discord import Activity, ActivityType, CustomActivity, Embed, Interaction, InteractionType, Message, Status, app_commands
-
-import aiofiles
+from discord import CustomActivity, Status
 
 from bot import PoxBot
-import data
 from logger import logger
 
 class InactivityStatus(commands.Cog):

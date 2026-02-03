@@ -74,9 +74,7 @@ class Info(commands.Cog):
         lines = []
 
         for k,v in rows_to_add.items():
-            lines.append(f"{k}: {v}")
-        
-        e.description = "\n".join(lines)
+            e.add_field(name=k,value=v)
 
         await interaction.followup.send(embed=e)
     

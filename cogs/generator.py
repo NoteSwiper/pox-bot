@@ -1,36 +1,85 @@
+import glob
+from itertools import islice
+import os
+from pathlib import Path
+import tempfile
+from time import time
+import uuid
+from aiocache import cached
+import aiofiles
 from discord.ext.commands import Cog
-from discord import app_commands, Embed, Interaction, File
+from discord import Message, app_commands, Embed, Interaction, File
+from discord.app_commands import locale_str
 import markovify
 from io import BytesIO
 from datetime import datetime
 import random
 from os.path import dirname, join
+from moviepy.editor import ImageClip, VideoFileClip, AudioFileClip, TextClip,ColorClip, CompositeVideoClip
+from moviepy.video.fx.fadein import fadein
+from moviepy.video.fx.loop import loop
+from moviepy.config import change_settings
+import PIL.Image
 
 from typing import Optional
 
-from sympy import sequence
-
 from bot import PoxBot
+from logger import logger
 import stuff
 import data
+from proglog import TqdmProgressBarLogger
 
 from matplotlib import pyplot as plt
+
+change_settings({"IMAGEMAGICK_BINARY": r"C:\Program Files\ImageMagick-7.1.2-Q16-HDRI\magick.exe"})
+
+class DiscordProgress(TqdmProgressBarLogger):
+    def __init__(self, interaction):
+        super().__init__()
+        self.interaction = interaction
+        self.last_update = 0
+    
+    def callback(self, **changes):
+        bars = self.state.get('bars', {})
+        if 'video_render' in bars:
+            data = bars['video_render']
+            current_pct = int((data['index'] / data['total']) * 100)
+
+            if current_pct >= self.last_update + 20:
+                self.last_update = current_pct
+
+                self.interaction.client.loop.create_task(
+                    self.interaction.edit_original_response(content=f"Rendering... {current_pct}")
+                )
+if not hasattr(PIL.Image, 'ANTIALIAS'):
+    PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS # type: ignore
 
 class Generators(Cog):
     def __init__(self, bot):
         self.bot: PoxBot = bot
-
+        self.target_size_mb = 24
+        self.bot.tree.add_command(
+            app_commands.ContextMenu(
+                name='Generate fade video',
+                callback=self.generate_funny_fade_video,
+            )
+        )
     group = app_commands.Group(name="generate", description="Generators.")
     
     @group.command(name="emoticon",description="Sends random emoticon")
+    @app_commands.checks.cooldown(2, 6, key=lambda i: i.user.id)
     async def send_emoticon(self,ctx):
         await ctx.response.send_message(random.choice(data.emoticons))
     
+    @cached(300)
     @group.command(name="idek", description="idek.")
+    @app_commands.checks.cooldown(2, 6, key=lambda i: i.user.id)
     async def idek(self, ctx):
         await ctx.response.send_message(f"idek.")
     
+    @cached(300)
     @group.command(name="nyan_cat",description="Nyan cat :D")
+    @app_commands.checks.cooldown(2, 6, key=lambda i: i.user.id)
     async def nyan_cat_image(self, ctx: Interaction):
         try:
             url = dirname(__file__)
@@ -43,7 +92,9 @@ class Generators(Cog):
         except Exception as e:
             await ctx.response.send_message(f"err.type=null.error. {e}")
     
+    @cached(300)
     @group.command(name="cat_jard", description="evade")
+    @app_commands.checks.cooldown(2, 6, key=lambda i: i.user.id)
     async def cat_jard(self, interaction: Interaction):
         embed = Embed()
         embed.set_image(url="attachment://cat.png")
@@ -205,7 +256,9 @@ class Generators(Cog):
         
         await ctx.response.send_message(f"{random.choice(arrays)}.")
     
+    @cached(300)
     @group.command(name="nyan_bot",description="Nyan bot.")
+    @app_commands.checks.cooldown(2, 6, key=lambda i: i.user.id)
     async def nyan_bot_image(self, ctx):
         try:
             url = dirname(__file__)
@@ -218,7 +271,9 @@ class Generators(Cog):
         except Exception as e:
             await ctx.response.send_message(f"Error. {e}")
     
+    @cached(300)
     @app_commands.command(name="hi",description="replys as hi")
+    @app_commands.checks.cooldown(2, 6, key=lambda i: i.user.id)
     async def say_hi(self, ctx: Interaction):
         await ctx.response.send_message("Hi.")
     
@@ -272,5 +327,125 @@ class Generators(Cog):
         else:
             await ctx.followup.send("An error occurred while generating the graph.")
     
+    async def image_autocomplete(self, interaction: Interaction, current: str) -> list[app_commands.Choice[str]]:
+        results = []
+        
+        files = glob.glob(os.path.join(self.bot.root_path, "resources/imgs/*.jpg")) + glob.glob(os.path.join(self.bot.root_path, "resources/imgs/*.png"))
+
+        for path in files:
+            path = os.path.basename(path)
+            results.append(app_commands.Choice(name=os.path.splitext(path)[0], value=path))
+            results.append(app_commands.Choice(name=os.path.splitext(path)[0].replace('_', ' '), value=path))
+
+        return list(islice((v for v in results if (current or "").lower() in (getattr(v, "name", "") or "").lower()), 25))
+
+    @group.command(name="image", description="Shows image by sum.")
+    @app_commands.autocomplete(id=image_autocomplete)
+    @app_commands.checks.cooldown(2, 6, key=lambda i: i.user.id)
+    async def generate_image(self, interaction: Interaction, id: str):
+        await interaction.response.defer()
+
+        if os.path.exists(os.path.join(self.bot.root_path, "resources/imgs/" + id)):
+            async with aiofiles.open(os.path.join(self.bot.root_path, "resources/imgs/" + id), 'rb') as f:
+                cont = await f.read()
+            
+            pic = File(BytesIO(cont), filename=id)
+
+            return await interaction.followup.send(f"Image name: {id}",file=pic)
+        else:
+            return await interaction.followup.send("I couldn't find that")
+        
+    @cached(60)
+    async def generate_funny_fade_video(self, interaction: Interaction, message: Message):
+        start_time = time()
+
+        if not message.attachments or len(message.attachments) > 1:
+            return await interaction.response.send_message("This message has not exactly one attachment.", ephemeral=True)
+        
+        content_type = message.attachments[0].content_type or ""
+        await interaction.response.send_message(f"Video request recceived by {interaction.user.mention}! Preparing data...")
+        
+        job_id = uuid.uuid4().hex
+        in_name = Path(f"cache/tempin_{job_id}{Path(message.attachments[0].filename).suffix}")
+        out_name = Path(f"cache/tempout_{job_id}.mp4")
+
+        faded = None
+        clip = None
+        try:
+            await message.attachments[0].save(in_name)
+
+            file_size = os.path.getsize(in_name.absolute()) / (1024 * 1024)
+
+            audio = AudioFileClip("resources/fade_music.mp3")
+
+            dur = min(8, audio.duration)
+            audio = audio.set_duration(dur)
+
+            if file_size > 24: return await interaction.followup.send("The filesize must be less than 24 MB.")
+            if "gif" in content_type:
+                clip = VideoFileClip(str(in_name)).fx(loop, duration=dur)
+            elif "image" in content_type:
+                clip = ImageClip(str(in_name)).set_duration(dur)
+            else:
+                clip = VideoFileClip(str(in_name)).set_duration(dur)
+            
+            clip = clip.resize(height=480)
+
+            fs = int(clip.w * 0.08)
+            box_w = int(clip.w * 0.9)
+
+            txt = TextClip(
+                message.content.strip() or "",
+                fontsize=fs,
+                color='white',
+                method='caption',
+                size=(box_w, None),
+                align='Center'
+            ).set_duration(dur)
+
+            bg_bar = ColorClip(
+                size=(clip.w, txt.h + 20),
+                color=(0,0,0)
+            )
+            bg_bar = bg_bar.set_opacity(0.6).set_duration(dur)
+
+            txt = CompositeVideoClip([
+                bg_bar.set_position('center'),
+                txt.set_position('center')
+            ], size=(clip.w, bg_bar.h)).set_duration(dur)
+
+            faded = CompositeVideoClip([clip, txt.set_position(('center', clip.h - txt.h - 20))]).set_audio(audio).fx(fadein, dur/2.5)
+
+            progress_logger = DiscordProgress(interaction)
+            faded.write_videofile(
+                str(out_name),
+                fps=20,
+                codec='libx264',
+                audio_codec='aac',
+                bitrate=f"450k",
+                threads=(os.cpu_count() or 1) // 1.5,
+                preset="ultrafast",
+                logger=progress_logger
+            )
+
+            render_time = round(time() - start_time, 2)
+
+            await interaction.edit_original_response(content=f"Rendered in {render_time} seconds!")
+            await interaction.followup.send(file=File(out_name, f"generated_{job_id[:16]}.mp4"))
+        except Exception as e:
+            logger.exception(e)
+            await interaction.followup.send(f"Oopsie! {e}"[:2000])
+        finally:
+            try:
+                for obj in ['final','clip','audio','txt','bg_bar','overlay']:
+                    if obj in locals() and obj is not None: locals()[obj].close()
+            except Exception as e:
+                logger.exception(e)
+            
+            try:
+                for p in [in_name, out_name]:
+                    if os.path.exists(p): os.remove(p)
+            except Exception as e:
+                logger.exception(e)
 async def setup(bot):
     await bot.add_cog(Generators(bot))

@@ -7,11 +7,11 @@ import sqlite3
 import time
 import unicodedata
 import logging
-import logging.handlers
 import re
 import base64
 import aiofiles
 import dotenv
+
 dotenv.load_dotenv()
 
 from discord import Interaction
@@ -180,6 +180,12 @@ def setup_database(database):
             xp INTEGER,
             level INTEGER,
             last_xp_gain REAL
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS counts (
+            id INTEGER PRIMARY KEY,
+            total INTEGER
         )
     """)
     # cursor.execute("""
@@ -597,3 +603,11 @@ def crop_word(text, needle_word, padding=8, emphasis=True):
     high = min(len(text), start + len(needle_word) + padding)
 
     return text[low:high]
+
+def get_int(i):
+    try:
+        return int(i)
+    except ValueError:
+        return 0
+    except Exception:
+        return -1

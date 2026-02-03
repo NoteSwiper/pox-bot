@@ -1,0 +1,58 @@
+{
+    "error.CommandInvokeError": {
+        "en-US": "An error occured while invoking command: {}"
+    },
+    "error.TransformerError": {
+        "en-US": "An error occured during argument transformation: {}"
+    },
+    "error.TranslationError": {
+        "en-US": "An error occured during command translation: {}"
+    },
+    "error.CheckFailure": {
+        "en-US": "You do not have permission to use this command due to check has been failed."
+    },
+    "error.NoPrivateMessage": {
+        "en-US": "This command cannot be used in private messages."
+    },
+    "error.MissingRole": {
+        "en-US": "You do not have the required role to use this command."
+    },
+    "error.MissingAnyRole": {
+        "en-US": "You do not have any of the required roles to use this command."
+    },
+    "error.MissingPermissions": {
+        "en-US": "You do not have permission to use this command.",
+        "es-ES": "No tienes permiso para usar comandos",
+        "ru-RU": "У вас нет разрешения на использование этой команды.",
+        "vi-VN": "Bạn không có quyền sử dụng lệnh này.",
+        "ja-JP": "このコマンドを使用する権限がありません。",
+        "zh-TW": "您沒有權限使用此命令。"
+    },
+    "error.BotMissingPermissions": {
+        "en-US": "I do not have the required permission to execute this command..."
+    },
+    "error.CommandOnCooldown": {
+        "en-US": "This command is on cooldown. Please try again after {} seconds."
+    },
+    "error.CommandLimitReached": {
+        "en-US": "The command limit has been reached. Please try again later."
+    },
+    "error.CommandAlreadyRegistered": {
+        "en-US": "This command is already registered."
+    },
+    "error.CommandSignatureMismatch": {
+        "en-US": "There is a signature mismatch for this command."
+    },
+    "error.CommandNotFound": {
+        "en-US": "This command was not found."
+    },
+    "error.CommandSyncFailure": {
+        "en-US": "Failed to synchronize commands."
+    },
+    "error.AppCommandError": {
+        "en-US": "An unknown error occured while executing the command..."
+    },
+    "error.Forbidden": {
+        "en-US": "The bot doesn't have permission to use `application.commands`."
+    }
+}

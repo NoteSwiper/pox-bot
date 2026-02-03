@@ -2,12 +2,9 @@ import stuff
 stuff.create_dir_if_not_exists("./logs")
 
 import os
-import subprocess
-import uuid
-import time
 import discord
 
-from datetime import datetime, UTC
+from datetime import UTC
 from discord.ext import commands
 from discord import Forbidden, HTTPException, Interaction, MissingApplicationID, app_commands
 
@@ -39,6 +36,10 @@ async def reload_cogs(interaction: Interaction):
     for fname in os.listdir('./cogs'):
         if fname.endswith('.py'):
             logger.debug(f"Loading extension {fname[:-3]}.")
+
+            if fname[:-3] in bot.EXCLUDE_EXTENSIONS:
+                logger.warning("This extension has excluded from loading.")
+                continue
             
             try:
                 await bot.reload_extension(f"cogs.{fname[:-3]}")

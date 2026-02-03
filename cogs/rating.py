@@ -2,8 +2,8 @@ import json
 import os
 from typing import Optional
 import aiofiles
-from discord import Embed, Interaction, Member, TextChannel, WelcomeChannel, app_commands
-from discord.ext import commands, tasks
+from discord import Embed, Interaction, Member, app_commands
+from discord.ext import commands
 from logger import logger
 
 from bot import PoxBot

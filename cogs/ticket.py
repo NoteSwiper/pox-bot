@@ -2,11 +2,10 @@ import asyncio
 import json
 import random
 from re import I
-from typing import Optional
 import aiofiles
 import discord
 from discord.ext import commands
-from discord import ButtonStyle, CategoryChannel, Color, Embed, Forbidden, Guild, HTTPException, Interaction, Member, PermissionOverwrite, Permissions, Role, TextChannel, TextStyle, app_commands
+from discord import ButtonStyle, CategoryChannel, Color, Embed, Forbidden, Interaction, Member, PermissionOverwrite, Role, TextChannel, TextStyle, app_commands
 from os.path import join, exists
 
 from bot import PoxBot

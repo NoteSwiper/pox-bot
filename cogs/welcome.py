@@ -2,8 +2,8 @@ import json
 import os
 from typing import Optional
 import aiofiles
-from discord import Embed, Interaction, Member, TextChannel, WelcomeChannel, app_commands
-from discord.ext import commands, tasks
+from discord import Embed, Interaction, Member, TextChannel, app_commands
+from discord.ext import commands
 from logger import logger
 
 from bot import PoxBot
@@ -83,7 +83,7 @@ class WelcomeCog(commands.Cog):
             lines = [
                 f"ID: {member.id}",
                 f"Name: {member.display_name}",
-                f"Created on: {member.created_at.strftime("%Y-%m-$d %H:%M")} (<t:{int(member.created_at.timestamp())}:R>)",
+                f"Created on: {member.created_at.strftime("%Y-%m-%d %H:%M")} (<t:{int(member.created_at.timestamp())}:R>)",
             ]
             if state == 1 and member.joined_at is not None: lines.append(f"Joined on: {member.joined_at.strftime("%Y-%m-$d %H:%M")} (<t:{int(member.joined_at.timestamp())}:R>)")
             rules_for = ""

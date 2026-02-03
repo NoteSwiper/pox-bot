@@ -1,11 +1,20 @@
 from collections import Counter, defaultdict
 import random
 import time
-from typing import Optional
-
-from discord import Color, Embed
+from discord import Locale, app_commands
+from discord.app_commands import locale_str
 
 import data
+
+class MyTranslator(app_commands.Translator):
+    async def translate(self, string: locale_str, locale: Locale, context: app_commands.TranslationContext):
+        translations = {
+            'You do not have permission to use commands.': {
+                'es-ES': 'No tienes permiso para usar comandos.',
+                
+            }
+        }
+        return translations.get(string.message, {}).get(locale.value, string.message)
 
 class Cache:
     def __init__(self, ttl):

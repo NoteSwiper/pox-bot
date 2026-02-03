@@ -2,6 +2,7 @@ from io import BytesIO
 import sys
 from time import time
 from typing import Optional
+from aiocache import cached
 import discord
 import wave
 from discord.ext import commands
@@ -33,6 +34,7 @@ class TTS(commands.Cog):
         
         return suggestions
     
+    @cached(60*2)
     @ttsgroup.command(name="google")
     @app_commands.autocomplete(lang=googletts_autocomplete)
     async def google_text_to_speech(self, interaction: discord.Interaction, text: str, slow: Optional[bool] = False, lang: Optional[str] = "en"):
@@ -60,6 +62,7 @@ class TTS(commands.Cog):
             await interaction.followup.send(f"An error occured while sending speech: {e}")
             logger.exception(f"{e}")
     
+    @cached(60)
     @ttsgroup.command(name="piper")
     async def piper_text_to_speech(
         self,
@@ -104,6 +107,7 @@ class TTS(commands.Cog):
             await interaction.followup.send(f"An error occured while sending speech: {e}")
             logger.exception(f"{e}")
 
+    @cached(60)
     @ttsgroup.command(name="edge")
     async def edge_text_to_speech(self, interaction: discord.Interaction, text: str, lang: Optional[str], slow: Optional[bool]):
         if not "edge_tts" in sys.modules:

@@ -3,7 +3,7 @@ import json
 import random
 import discord
 from discord.ext import commands, tasks
-from discord import Colour, Embed, Interaction, TextChannel, app_commands
+from discord import Colour, Embed, TextChannel, app_commands
 from os.path import exists, join
 
 import aiofiles

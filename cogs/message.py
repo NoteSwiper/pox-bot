@@ -1,19 +1,14 @@
 import asyncio
-from datetime import timedelta
-from enum import Enum
 import random
 import re
-import string
 import textwrap
-import time
-import os
 from typing import Optional
+from aiocache import cached
 from attr import has
 import discord
 from discord.ext import commands
-from discord import Embed, Forbidden, Interaction, Member, Message, SelectOption, TextChannel, TextStyle, app_commands
+from discord import Embed, Forbidden, Interaction, Member, Message, TextChannel, TextStyle, app_commands
 from bot import PoxBot
-import data
 from logger import logger
 import stuff
 from textwrap import shorten
@@ -172,6 +167,7 @@ class MessageGroup(commands.Cog):
                         logger.error(f"{channel.name} Forbidden")
         return interaction.followup.send(f"Sent to {send_count} of channels: "+"\n".join(sent_channels))
     
+    @cached(60)
     @group.command(name="search", description="Searches messages in current channel.")
     @app_commands.guild_only()
     async def search_messages_in_channel(self, interaction: Interaction, keyword: str, limit: Optional[int] = 100):
@@ -179,7 +175,7 @@ class MessageGroup(commands.Cog):
         found_messages = []
 
         if limit is None: limit = 1000
-        else: limit = stuff.clamp(limit, 1,1000)
+        else: limit = stuff.clamp(limit, 1,10000)
 
         if isinstance(interaction.channel, discord.TextChannel):
             async for message in interaction.channel.history(limit=limit):
@@ -197,7 +193,8 @@ class MessageGroup(commands.Cog):
             embed.description = f"No messages found containing '{keyword}'."
             embed.color = discord.Color.red()
             return await interaction.followup.send(embed=embed)
- 
+
+    @cached(120)
     @group.command(name="last", description="Fetches the last message from the current channel.")
     @app_commands.guild_only()
     async def fetch_last_message(self, interaction: Interaction):
@@ -221,6 +218,7 @@ class MessageGroup(commands.Cog):
 
             return await interaction.followup.send(embed=embed)
     
+    @cached(240)
     @group.command(name="first", description="Fetches the first message from the current channel.")
     @app_commands.guild_only()
     async def fetch_first_message(self, interaction: Interaction):
@@ -245,6 +243,7 @@ class MessageGroup(commands.Cog):
 
             return await interaction.followup.send(embed=embed)
     
+    @cached(60)
     @group.command(name="count", description="Counts messages in the current channel.")
     @app_commands.guild_only()
     async def count_messages_in_channel(self, interaction: Interaction):
@@ -258,6 +257,7 @@ class MessageGroup(commands.Cog):
         
         return await interaction.followup.send(f"There are {message_count} messages in this channel.")
 
+    @cached(60)
     @group.command(name="random", description="Fetches a random message from the current channel.")
     @app_commands.guild_only()
     async def fetch_random_message(self, interaction: Interaction):

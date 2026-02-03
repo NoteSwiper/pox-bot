@@ -1,5 +1,6 @@
 import random
 from typing import Optional
+from aiocache import cached
 from discord import Embed, Interaction, Member, User, app_commands
 from discord.ext import commands
 
@@ -12,6 +13,7 @@ class Detector(commands.Cog):
     
     detector_group = app_commands.Group(name="detect", description="A group for detector cogs")
     
+    @cached(300)
     @detector_group.command(name="gay", description="Check if member is gay")
     @app_commands.describe(member="Member to check")
     async def gay_detector(self, interaction: Interaction, member: Member):
@@ -25,6 +27,7 @@ class Detector(commands.Cog):
         
         await interaction.followup.send(embed=e)
         
+    @cached(300)
     @detector_group.command(name="retroslop", description="Check if member is retroslop")
     @app_commands.describe(member="Member to check")
     async def retroslop_detector(self, interaction: Interaction, member: Member):
@@ -38,6 +41,7 @@ class Detector(commands.Cog):
         
         await interaction.followup.send(embed=e)
     
+    @cached(300)
     @detector_group.command(name="femboy", description="Check if member is femboy")
     @app_commands.describe(member="Member to check")
     async def femboy_detector(self, interaction: Interaction, member: Member):
@@ -51,6 +55,7 @@ class Detector(commands.Cog):
         
         await interaction.followup.send(embed=e)
     
+    @cached(300)
     @detector_group.command(name="freaky", description="Check if member is freaky")
     @app_commands.describe(member="Member to check")
     async def freaky_detector(self, interaction: Interaction, member: Member):
@@ -64,6 +69,7 @@ class Detector(commands.Cog):
         
         await interaction.followup.send(embed=e)
     
+    @cached(300)
     @detector_group.command(name="vibe",description="Checks how's vibing")
     @app_commands.describe(member="Member to check")
     async def vibe_check(self, interaction: Interaction, member: Optional[Member|User] = None):
@@ -81,6 +87,7 @@ class Detector(commands.Cog):
         e.set_footer(text="Don't take the results too seriously.")
         await interaction.followup.send(embed=e)
     
+    @cached(300)
     @detector_group.command(name="custom", description="Check if member is something specified in command")
     @app_commands.describe(member="Member to check")
     async def custom_detection(self, interaction: Interaction, member: Member, *, custom: str):
@@ -94,6 +101,7 @@ class Detector(commands.Cog):
         
         await interaction.followup.send(embed=e)
         
+    @cached(300)
     @detector_group.command(name="custom2", description="Check if something specified in command")
     async def custom_detection2(self, interaction: Interaction, custom: str):
         await interaction.response.defer(thinking=True)

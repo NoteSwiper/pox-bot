@@ -1,6 +1,6 @@
 import time
-from discord.ext import commands, tasks
-from discord import CustomActivity, app_commands, Interaction, Embed, User, Member, File
+from discord.ext import commands
+from discord import app_commands, Interaction, Embed
 
 from bot import PoxBot
 from thefuzz import process

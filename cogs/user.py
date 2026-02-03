@@ -6,10 +6,10 @@ from typing import Optional
 from discord.ext import commands
 from discord import Activity, ActivityType, ClientStatus, Color, CustomActivity, Embed, Forbidden, Game, HTTPException, Interaction, Member, Role, Spotify, Status, Streaming, TextChannel, app_commands
 from os.path import exists, join
+from aiocache import cached
 
 from bot import PoxBot
 
-from cogs import checker
 from logger import logger
 from textwrap import shorten
 
@@ -137,7 +137,7 @@ class UserGroup(commands.Cog):
             return await interaction.followup.send(f"Error. {e}")
             logger.error(f"Error: {e}")
     
-    
+    @cached(60)
     @group.command(name="avatar", description="Display user's avatar in discord.")
     @app_commands.guild_only()
     async def get_user_avatar(self, interaction: Interaction, member: Member):
@@ -145,6 +145,7 @@ class UserGroup(commands.Cog):
 
         embed = Embed(title=f"{member.display_name}'s Avatar")
         embed.set_image(url=member.display_avatar.url if member.display_avatar else member.default_avatar.url)
+        embed.set_footer(text=f"Requested by {interaction.user.name}, the result is cached for a minute.", icon_url=interaction.user.display_avatar.url if interaction.user.display_avatar else interaction.user.default_avatar.url)
 
         return await interaction.followup.send(embed=embed)
     
@@ -293,6 +294,7 @@ class UserGroup(commands.Cog):
 
         return await interaction.followup.send(embed=embed)
     
+    @cached(60)
     @group.command(name="find_first_message_contains", description="Finds the first message sent by specified user containing the keyword in the current channel.")
     @app_commands.guild_only()
     @app_commands.describe(member="Member to search messages for.")
@@ -323,6 +325,7 @@ class UserGroup(commands.Cog):
 
         return await interaction.followup.send(embed=embed)
     
+    @cached(120)
     @group.command(name="search_messages", description="Searches messages sent by specified user in the current channel.")
     @app_commands.guild_only()
     @app_commands.describe(member="Member to search messages for.")
@@ -358,6 +361,7 @@ class UserGroup(commands.Cog):
 
         return await interaction.followup.send(embed=embed)
     
+    @cached(120*2)
     @group.command(name="first_message", description="Gets the first message sent by specified user in the current channel.")
     @app_commands.guild_only()
     @app_commands.describe(member="Member to get first message for.")
@@ -384,7 +388,8 @@ class UserGroup(commands.Cog):
             embed.color = Color.red()
 
         return await interaction.followup.send(embed=embed)
-
+    
+    @cached(60)
     @group.command(name="latest_message", description="Gets the latest message sent by specified user in the current channel.")
     @app_commands.guild_only()
     @app_commands.describe(member="Member to get latest message for.")
@@ -412,6 +417,7 @@ class UserGroup(commands.Cog):
 
         return await interaction.followup.send(embed=embed)
     
+    @cached(60)
     @group.command(name="random_message", description="Gets a random message sent by specified user in the current channel.")
     @app_commands.guild_only()
     @app_commands.describe(member="Member to get random message for.")
@@ -451,7 +457,8 @@ class UserGroup(commands.Cog):
             e.description = f"No, <@{member.id}> is not pepo."
         
         return await interaction.followup.send(embed=e)
-
+    
+    @cached(120*4)
     @group.command(name="hash", description="Get user's hash code.")
     @app_commands.guild_only()
     async def get_user_hash(self, interaction: Interaction, member: Member):

@@ -1,3 +1,4 @@
+from aiocache import cached
 import discord
 from discord.ext.commands import Cog
 from discord import app_commands, Embed, Interaction
@@ -8,6 +9,7 @@ class Feedback(Cog):
     def __init__(self, bot):
         self.bot: PoxBot = bot
     
+    @cached(300)
     @app_commands.command(name="feedback", description="Feedback.")
     async def feedback(self, interaction: Interaction):
         e = Embed()

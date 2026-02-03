@@ -1,9 +1,8 @@
-from datetime import timedelta
 import random
 import string
 from typing import Optional
 from discord.ext import commands
-from discord import Activity, ActivityType, CustomActivity, Embed, Forbidden, Game, HTTPException, Interaction, Member, Role, Spotify, Streaming, app_commands
+from discord import Embed, Interaction, Member, app_commands
 
 from bot import PoxBot
 

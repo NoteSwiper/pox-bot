@@ -1,7 +1,6 @@
-from datetime import timedelta
-from typing import Optional
+from aiocache import cached
 from discord.ext import commands
-from discord import Activity, ActivityType, CustomActivity, Embed, Forbidden, Game, HTTPException, Interaction, Member, Role, Spotify, Status, Streaming, app_commands
+from discord import Embed, Interaction, Status, app_commands
 
 from bot import PoxBot
 
@@ -13,6 +12,7 @@ class CountsGroup(commands.Cog):
     
     group = app_commands.Group(name="count", description="An group for Counters.")
 
+    @cached(60)
     @group.command(name="users", description="Get count of users.")
     @app_commands.guild_only()
     async def count_members(self, interaction: Interaction):
@@ -40,7 +40,8 @@ class CountsGroup(commands.Cog):
         embed = Embed(title="Server counter: users & extras", description="\n".join(lines))
 
         await interaction.response.send_message(embed=embed)
-    
+
+    @cached(60)
     @group.command(name="online_users", description="Get count of online users.")
     @app_commands.guild_only()
     async def count_online_members(self, interaction: Interaction):
@@ -66,7 +67,8 @@ class CountsGroup(commands.Cog):
         embed = Embed(title="Server counter: online user", description="\n".join(lines))
 
         await interaction.response.send_message(embed=embed)
-    
+
+    @cached(60)
     @group.command(name="roles", description="Get count of roles.")
     @app_commands.guild_only()
     async def count_roles(self, interaction: Interaction):

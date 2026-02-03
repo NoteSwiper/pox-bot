@@ -1,4 +1,4 @@
-from enum import IntEnum, auto
+from enum import IntEnum, IntFlag, auto
 import re, json
 
 with open("emoticons.txt", 'r', encoding="utf-8") as f:
@@ -482,4 +482,15 @@ morse_code_table = {
     '?': '..--..',
     "\n": '.-.-',
     '<SOS>': '...---...',
+}
+
+class ResponseType(IntFlag):
+    Image = auto()
+    Text = auto()
+
+responses = {
+    r"(yo)?u cool (t(h|o)o)?": {
+        "response": "You're cool tho :D",
+        "image_path": "resources/cool.png"
+    }
 }

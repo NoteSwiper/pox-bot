@@ -1,7 +1,8 @@
-from discord import Activity, ActivityType, Color, CustomActivity, Embed, Game, Interaction, Member, NSFWLevel, Role, Spotify, Status, Streaming, TextChannel, app_commands
+from aiocache import cached
+from discord import Color, Embed, Interaction, NSFWLevel, app_commands
+from discord.app_commands import locale_str
 from discord.ext import commands
-
-from typing import Optional
+from enum import IntFlag, auto
 
 from bot import PoxBot
 from logger import logger
@@ -53,6 +54,7 @@ class GuildGroup(commands.Cog):
         else:
             return await interaction.followup.send("Guild not found.")
     
+    @cached(300)
     @checker_group.command(name="nsfw_level",description="Checks if server has NSFW Level")
     @app_commands.guild_only()
     async def check_nsfw_level(self, interaction: Interaction):
@@ -75,14 +77,99 @@ class GuildGroup(commands.Cog):
         
         return await interaction.followup.send(embed=embed)
     
+    @cached(300)
     @checker_group.command(name="icon", description="Gets server icon.")
     @app_commands.guild_only()
     async def get_server_icon(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
         if interaction.guild and interaction.guild.icon:
-            return await interaction.followup.send(embed=Embed(title="Server Icon", image=interaction.guild.icon.url))
+            return await interaction.followup.send(embed=Embed(title="Server Icon")
+                .set_image(url=interaction.guild.icon.url))
         else:
             return await interaction.followup.send("No icon found.")
+    
+    @cached(60)
+    @checker_group.command(name="members_list", description="Retrieves memebers in this guild.")
+    @app_commands.guild_install()
+    async def get_members(self, interaction: Interaction, include_bot: bool = False, include_member: bool = True):
+        await interaction.response.defer()
+
+        if not interaction.guild:
+            return await interaction.followup.send(embed=Embed(title="Error", description=locale_str("error.GuildOnly"), color=Color.red()))
+        
+        embed = Embed(
+            title=f"{interaction.guild.name}'s members",
+            description="",
+            color=Color.green()
+        )
+
+        members = []
+
+        if include_bot == False and include_member == False:
+            embed.color = Color.red()
+            embed.description = "You cannot exclude both!"
+            return await interaction.followup.send(embed=embed)
+        
+        for member in sorted(interaction.guild.members, key=lambda r: r.top_role.position, reverse=True):
+            if include_bot and member.bot:
+                members.append(f"{member.top_role.mention}: {member.mention}")
+            
+            if include_member and not member.bot:
+                members.append(f"{member.top_role.mention}: {member.mention}")
+        
+        if len(members) == 0:
+            embed.color = Color.purple()
+            embed.description = "Not found"
+            return await interaction.followup.send(embed=embed)
+        else:
+            embed.description = "\n".join(members)
+            return await interaction.followup.send(embed=embed)
+    
+    @cached(60)
+    @checker_group.command(name="search_members", description="Searches members by keyword.")
+    @app_commands.guild_install()
+    async def search_members(self, interaction: Interaction, keyword: str):
+        await interaction.response.defer()
+
+        if not interaction.guild:
+            return await interaction.followup.send(embed=Embed(title="Error", description=locale_str("error.GuildOnly"), color=Color.red()))
+        
+        embed = Embed(
+            title=f"Member contains with '{keyword}' by username in {interaction.guild.name}",
+            description="",
+            color=Color.green()
+        )
+
+        result = []
+
+        for member in interaction.guild.members:
+            if keyword in member.name:
+                result.append(member.mention)
+        
+        if len(result) == 0:
+            embed.color = Color.purple()
+            embed.description = f"User starts with {keyword} not found from this guild."
+            return await interaction.followup.send(embed=embed)
+        else:
+            embed.description = ", ".join(result)
+            return await interaction.followup.send(embed=embed)
+    
+    @cached(60)
+    @checker_group.command(name="role_list", description="Retrieves list of roles.")
+    @app_commands.guild_install()
+    async def get_roles(self, interaction: Interaction):
+        await interaction.response.defer()
+
+        if not interaction.guild:
+            return await interaction.followup.send(embed=Embed(title="Error", description=locale_str("error.GuildOnly"), color=Color.red()))
+        
+        embed = Embed(
+            title=f"List of roles in {interaction.guild.name}",
+            description="\n".join([role.mention for role in sorted(interaction.guild.roles, key=lambda r: r.position, reverse=True) if not role.managed and role.name != "@everyone"]),
+            color=Color.green()
+        )
+
+        return await interaction.followup.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(GuildGroup(bot))

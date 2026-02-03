@@ -1,8 +1,7 @@
+from aiocache import cached
 from discord.ext.commands import Cog
 from discord import Embed, Member, app_commands, Interaction
 import random
-
-from matplotlib import pyplot as plt
 
 from bot import PoxBot
 
@@ -95,6 +94,7 @@ class Fun(Cog):
         else:
             return await interaction.response.send_message(f"You've not even started the guess.")
 
+    @cached(300)
     @app_commands.command(name="job_application",description="yeah")
     async def a_job_message(self, ctx):
         try:

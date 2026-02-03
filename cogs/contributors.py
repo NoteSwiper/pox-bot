@@ -1,17 +1,8 @@
 from discord.ext.commands import Cog
 from discord import Color, app_commands, Embed, Interaction, File
-import markovify
-from io import BytesIO
-from datetime import datetime
-import random
 from os.path import dirname, join
 
-from typing import Optional
-
-from sympy import sequence
-
 from bot import PoxBot
-import stuff
 import data
 
 from matplotlib import pyplot as plt
@@ -54,11 +45,11 @@ class Contributors(Cog):
         if embed:
             return await interaction.response.send_message(embed=embed,file=pic)
 
-    @group.command(name="annayarik13alt", description=":3 (The image belongs to yarik999.999)")
+    @group.command(name="annayarik999alt", description=":3 (The image belongs to always_happy_and_smile)")
     async def cat_annayarik13alt(self, interaction: Interaction):
-        embed = Embed(title="Special thanks to AnnaYarik13Alt", description="He helped me suggesting the commands", color=Color.yellow())
+        embed = Embed(title="Special thanks to AnnaYarik999Alt", description="He helped me suggesting the commands", color=Color.yellow())
         embed.set_image(url="attachment://cat.jpg")
-        embed.set_footer(text="Image credit by `yarik999.999`. (AnnaYarik13Alt, i guess)")
+        embed.set_footer(text="Image credit by `always_happy_and_smile`. (AnnaYarik999Alt, i guess)")
         
         path = join(dirname(__file__), "../resources/cat_anna.jpg")
 

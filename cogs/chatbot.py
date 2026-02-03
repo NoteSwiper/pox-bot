@@ -1,7 +1,7 @@
 import time
-import discord
-from discord.ext import commands, tasks
-from discord import Activity, ActivityType, CustomActivity, Embed, Interaction, InteractionType, Message, Status, app_commands
+from aiocache import cached
+from discord.ext import commands
+from discord import Interaction, app_commands
 
 import lmstudio as lms
 
@@ -14,6 +14,7 @@ class ChatbotCog(commands.Cog):
 
     group = app_commands.Group(name="ai", description="Chat with Gemma 3 1b yea")
 
+    @cached(60)
     @group.command(name="chat", description="Chat with Gemma3-1b")
     async def chat_ai(self, interaction: Interaction, prompt: str):
         await interaction.response.defer()

@@ -1,10 +1,8 @@
 import json
-import random
 import time
-from typing import Literal, Optional
-import discord
-from discord.ext import commands, tasks
-from discord import Activity, ActivityType, Color, CustomActivity, Embed, Interaction, Member, Message, Status, app_commands
+from typing import Optional
+from discord.ext import commands
+from discord import Color, Embed, Interaction, Member, Message, app_commands
 from os.path import exists, join
 
 import aiofiles

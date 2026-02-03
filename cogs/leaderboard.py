@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional, Union
+from aiocache import cached
 from discord import Color, Embed, Forbidden, Guild, Interaction, Member, NotFound, app_commands
 from discord.ext.commands import Cog, guild_only
 
@@ -61,6 +61,7 @@ class Leaderboard(Cog):
     
     group = app_commands.Group(name="leaderboard",description="Leaderboards")
     
+    @cached(60)
     @group.command(name="pox",description="Shows leaderboard in server who said pox for many times")
     async def poxword_leaderboard(self, interaction: Interaction):
         await interaction.response.defer()
@@ -87,6 +88,7 @@ class Leaderboard(Cog):
         else:
             await interaction.followup.send("sorry, bot has no connection with Database.")
     
+    @cached(60)
     @group.command(name="mine", description="Shows your word points for no reason")
     async def my_point(self , interaction: Interaction):
         await interaction.response.defer()
@@ -108,6 +110,7 @@ class Leaderboard(Cog):
         else:
             await interaction.followup.send("sorry, bot has no connection with Database.")
     
+    @cached(60)
     @group.command(name="words",description="Shows leaderboard who has yapping all times")
     async def word_leaderboard(self, interaction: Interaction):
         await interaction.response.defer()
@@ -134,7 +137,7 @@ class Leaderboard(Cog):
         else:
             await interaction.followup.send("sorry, bot has no connection with Database.")
     
-    
+    @cached(120)
     @group.command(name="local_words",description="Shows leaderboard in server who has yapping all times")
     @guild_only()
     async def word_leaderboard_local(self, interaction: Interaction):
@@ -224,6 +227,7 @@ class Leaderboard(Cog):
             return await interaction.followup.send(embed=embed)
 
     # get specified user's word count
+    @cached(60)
     @group.command(name="user_words",description="Shows specified user's word points")
     async def user_word_count(self, interaction: Interaction, user: Member):
         await interaction.response.defer()
@@ -237,7 +241,7 @@ class Leaderboard(Cog):
 
         async with self.bot.db_connection.execute("SELECT amount FROM words WHERE user_id = ?", (user.id,)) as cursor:
             lbdata = await cursor.fetchone()
-        
+    
         if not lbdata:
             embed.description = f"<@{user.id}> has no points."
             return await interaction.followup.send(embed=embed)

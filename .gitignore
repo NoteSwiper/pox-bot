@@ -237,3 +237,6 @@ voices/*
 leaderboard.db
 test.py
 log.py
+testdata/*
+testdata/
+testdata

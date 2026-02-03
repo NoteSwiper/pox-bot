@@ -1,7 +1,8 @@
-import time
-from discord import Activity, ActivityType, CustomActivity, Embed, Game, Interaction, Member, NSFWLevel, Role, Spotify, Status, Streaming, TextChannel, app_commands
+from aiocache import cached
+from discord import Embed, Interaction, app_commands
 from discord.ext import commands
 
+from mcstatus import JavaServer
 import mojang
 
 from roblox import UserNotFound
@@ -20,6 +21,7 @@ class GetAPI(commands.Cog):
     minecraft_group = app_commands.Group(name="minecraft", description="Sub-group")
     roblox_group = app_commands.Group(name="roblox", description="Sub-group")
 
+    @cached(300)
     @minecraft_group.command(name="uuid", description="Converts Username to UUID.")
     async def username_to_uuid(self, interaction: Interaction, username: str):
         cached = self.bot.cache.get(f"mcid_{username}")
@@ -34,6 +36,7 @@ class GetAPI(commands.Cog):
             else:
                 await interaction.response.send_message("Couldn't resolve the username.")
     
+    @cached(300)
     @minecraft_group.command(name="username", description="Converts UUID to Username.")
     async def uuid_to_username(self, interaction: Interaction, uuid: str):
         cached = self.bot.cache.get(f"mcuuid_{uuid}")
@@ -52,14 +55,15 @@ class GetAPI(commands.Cog):
     async def roblox_username_autocomplete(self, interaction: Interaction, current: str) -> list[app_commands.Choice[str]]:
         choices = []
         try:
-            async for user in self.bot.roblox_client.user_search(current).items(8):
+            async for user in self.bot.roblox_client.user_search(current, max_items=10):
                 choices.append(app_commands.Choice(name=f"{user.display_name} (@{user.name})", value=user.name))
-                if len(choices) >= 25:
+                if len(choices) >= 24:
                     break
         except Exception:
             pass
         return choices
     
+    @cached(300)
     @roblox_group.command(name="avatar", description="Get Roblox user avatar by username.")
     @app_commands.autocomplete(username=roblox_username_autocomplete)
     async def roblox_get_avatar(self, interaction: Interaction, username: str):
@@ -100,11 +104,16 @@ class GetAPI(commands.Cog):
             
         if avatar_url:
             embed = Embed(title=f"Avatar for '{username}'")
+            embed.set_author(
+                name=interaction.user.name,
+                icon_url=interaction.user.display_avatar.url
+            )
             embed.set_image(url=avatar_url.image_url)
             return await interaction.followup.send(embed=embed)
         else:
             return await interaction.followup.send(f"Failed to retrieve avatar for '{username}'.")
 
+    @cached(300)
     @roblox_group.command(name="user", description="Get Roblox user info by username.")
     @app_commands.autocomplete(username=roblox_username_autocomplete)
     async def roblox_get_user(self, interaction: Interaction, username: str):

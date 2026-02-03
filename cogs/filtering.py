@@ -1,9 +1,5 @@
-import json
-import discord
 from discord.ext import commands
-from discord import Embed, Interaction, app_commands
-
-import aiofiles
+from discord import Interaction, app_commands
 
 from bot import PoxBot
 

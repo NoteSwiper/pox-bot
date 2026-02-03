@@ -1,6 +1,3 @@
-from re import I
-from typing import Optional
-import discord
 from discord.ext import commands
 from discord import Embed, Forbidden, HTTPException, Interaction, Member, Permissions, Role, app_commands
 

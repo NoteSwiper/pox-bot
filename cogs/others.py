@@ -6,8 +6,9 @@ import asyncio
 from random import shuffle
 import random
 import re
-from discord.ext import commands, tasks
-from discord import CustomActivity, app_commands, Interaction, Embed, User, Member, File
+from aiocache import cached
+from discord.ext import commands
+from discord import app_commands, Interaction, Embed, File
 from typing import Optional
 
 import os
@@ -54,6 +55,7 @@ class Others(commands.Cog):
     
     nullgroup = app_commands.Group(name="null",description=":)")
     
+    @cached(60)
     @nullgroup.command(name="response", description="Null is already here. he's waiting for you. btw don't take it seriously.")
     async def nulltalk(self, interaction: Interaction, *, input: str):
         await interaction.response.defer(thinking=True)
@@ -79,6 +81,7 @@ class Others(commands.Cog):
         
         await interaction.followup.send("NullPointerException thrown.")
     
+    @cached(240)
     @nullgroup.command(name="kys",description="dead meme i think")
     async def kysimage(self, interaction: Interaction):
         url = os.path.dirname(__file__)
@@ -91,6 +94,7 @@ class Others(commands.Cog):
         e.set_image(url="attachment://nah.jpg")
         await interaction.response.send_message(file=pic,embed=e)
     
+    @cached(240)
     @nullgroup.command(name="generate", description="Generates random sentence.")
     async def generator(self, interaction: Interaction, index_to_generate: Optional[int], size: Optional[int]):
         await interaction.response.defer()
