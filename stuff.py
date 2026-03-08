@@ -31,6 +31,9 @@ def get_bot_token():
     logger.debug("Retrieving token...")
     return os.getenv('TOKEN')
 
+def get_lmstudio_token():
+    return os.getenv("LM_API_TOKEN")
+
 def get_mysql_credentials():
     logger.debug("Retrieving MySQL credentials...")
     user = os.getenv('MYSQL_USER')
