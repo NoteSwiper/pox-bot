@@ -105,6 +105,12 @@ class PoxBot(commands.AutoShardedBot):
                         message_id BIGINT, emoji VARCHAR(255), role_id BIGINT, PRIMARY KEY (message_id, emoji)
                     )
                 """)
+                await cur.execute("""
+                    CREATE TABLE IF NOT EXISTS globalchannels (
+                        channel BIGINT PRIMARY KEY,
+                        guild BIGINT
+                    )
+                """)
 
         try:
             async with aiofiles.open('data/blacklisted_words.json', 'r+') as f:

@@ -17,7 +17,7 @@ class ChatbotCog(commands.Cog):
         self.history = {}
         self.model_id = "liquid/lfm2.5-1.2b"
 
-    group = app_commands.Group(name="ai", description="Chat with Gemma 3 1b yea")
+    group = app_commands.Group(name="ai", description="An AI Chat hosted in local server-")
     
     @commands.Cog.listener()
     async def on_message(self, message: Message):
@@ -35,12 +35,13 @@ class ChatbotCog(commands.Cog):
                             if channel.permissions_for(guild.me).send_messages:
                                 async with channel.typing():
                                     api_host = await lms.AsyncClient.find_default_local_api_host()
-                                    if not api_host: await channel.send("Hold on, I can't responese this time.")
+                                    if not api_host:
+                                        api_host = "localhost:1234"
                                     
                                     guild_id = guild.id if not isinstance(channel, DMChannel) else channel.id
                                     
                                     if guild_id not in self.history:
-                                        self.history[guild_id] = lms.Chat("You're silly assistant.")
+                                        self.history[guild_id] = lms.Chat()
                                     
                                     history: lms.Chat = self.history[guild_id]
                                     history.add_user_message(prompt)
@@ -75,7 +76,7 @@ class ChatbotCog(commands.Cog):
 
         guild_id = interaction.guild_id or interaction.user.id
         if guild_id not in self.history:
-            self.history[guild_id] = lms.Chat("You're silly assistant.")
+            self.history[guild_id] = lms.Chat()
         
         history: lms.Chat = self.history[guild_id]
         history.add_user_message(prompt)
@@ -107,6 +108,16 @@ class ChatbotCog(commands.Cog):
         except Exception as e:
             logger.exception(f"AI Chat Error: {e}")
             await message.edit(content="Sorry, I encountered an error processing that request.")
+    
+    @group.command(name="clear_history", description="Clears history.")
+    async def clear_history(self, interaction: Interaction):
+        await interaction.response.defer()
+        
+        guild_id = interaction.guild_id or interaction.user.id
+        if guild_id in self.history:
+            self.history[guild_id] = lms.Chat()
+        
+        await interaction.followup.send("ok")
 
 async def setup(bot):
     await bot.add_cog(ChatbotCog(bot))
