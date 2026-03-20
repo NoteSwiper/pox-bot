@@ -161,7 +161,7 @@ class ChatbotCog(commands.Cog):
             if message.reference.resolved.author == self.bot.user:
                 replied_to = "<You>"
             
-            user_entry = f"{user_indentity} replied to {replied_to}: content"
+            user_entry = f"{user_indentity} replied to {replied_to}: {content}"
         else:
             user_entry = f"{user_indentity}: {content}"
         
