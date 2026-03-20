@@ -10,6 +10,12 @@ def get_contributors():
     
     return contributors_data
 
+def get_contributors_v2():
+    with open('resources/contributors.v2.json', 'r', encoding="utf-8") as f:
+        contributors_data = json.load(f)
+    
+    return contributors_data
+
 class MemberFetchStatus(IntEnum):
     CACHED = auto()
     FETCHED = auto()

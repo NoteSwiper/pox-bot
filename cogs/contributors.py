@@ -13,7 +13,7 @@ class Contributors(Cog):
         self.contributor_list = data.get_contributors()
 
     group = app_commands.Group(name="contributors", description="Contributors.")
-
+    
     @group.command(name="list", description="Lists all contributors.")
     async def list_contributors(self, interaction: Interaction):
         embed = Embed(title="Contributors", description="Here is a list of contributors who have helped with this bot :3")

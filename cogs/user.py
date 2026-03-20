@@ -1,5 +1,5 @@
 import asyncio
-from datetime import timedelta
+from datetime import datetime, timedelta
 import math
 import random
 from typing import Optional
@@ -59,6 +59,28 @@ class UserGroup(commands.Cog):
         self.bot: PoxBot = bot
     
     group = app_commands.Group(name="user", description="An group for Members.")
+    
+    @group.command(name="how_long", description="Checks how long user has been in the server.")
+    @app_commands.guild_only()
+    async def check_how_long_user_has_been(self, interaction: Interaction, member:Member):
+        await interaction.response.defer()
+        
+        if not interaction.guild: return await interaction.followup.send("You must be run this command in guild mode")
+        
+        try:
+            embed = Embed(title=f"How long {member.name} has been on server?")
+            joined_date = member.joined_at
+            if not joined_date: raise Exception("Welp")
+            
+            now = datetime.now(joined_date.tzinfo)
+            
+            duration = now - joined_date
+            
+            embed.description = f"{member.name} has been on the server for {duration} days"
+        except Exception as e:
+            logger.exception(e)
+            await interaction.followup.send("sry errored")
+    
     @group.command(name="info", description="Get user's information.")
     @app_commands.guild_only()
     async def check_user_info(self, interaction: Interaction, member: Member):

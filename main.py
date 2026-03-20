@@ -11,6 +11,11 @@ from discord import Forbidden, HTTPException, Interaction, MissingApplicationID,
 from bot import PoxBot
 from logger import logger
 
+import psutil
+
+process_ps = psutil.Process(os.getpid())
+process_ps.nice(psutil.ABOVE_NORMAL_PRIORITY_CLASS)
+
 bot_token = stuff.get_bot_token()
 
 intents = discord.Intents.all()

@@ -1,23 +1,166 @@
+import asyncio
 import platform
 import time
-from discord import Embed, Interaction, app_commands
+from discord import ButtonStyle, Color, Embed, Interaction, SelectOption, app_commands
 import discord
 from discord.ext import commands
+from discord.ui import Select
 import distro
-from datetime import datetime
+from datetime import datetime, timezone
+import psutil
 import pytz
 
 from bot import PoxBot
+from cogs.chatbot import ChatbotCog
+from logger import logger
 from stuff import get_formatted_from_seconds
 import stuff
 
+class DynamicInfoView(discord.ui.View):
+    def __init__(self, cog, bot):
+        super().__init__(timeout=120)
+        self.cog = cog
+        self.bot: PoxBot = bot
+        
+        url_button = discord.ui.Button(label='Visit source code', style=ButtonStyle.link, url="https://github.com/noteswiper/pox-bot")
+        self.add_item(url_button)
+    
+    async def get_stats_data(self, interaction: Interaction):
+        cpu_usage = await asyncio.to_thread(psutil.cpu_percent, interval=0.1)
+        mem = await asyncio.to_thread(psutil.virtual_memory)
+        disk = await asyncio.to_thread(psutil.disk_usage, '/')
+        
+        uptime = "Unknown"
+        if self.bot.launch_time2:
+            uptime = stuff.get_formatted_from_seconds(round(time.time() - self.bot.launch_time2))
+        
+        platform_info = platform.platform(aliased=True)
+        if platform.system() == "Linux":
+            try:
+                os_rel = platform.freedesktop_os_release()
+                if os_rel and os_rel.get("ID") == "ubuntu":
+                    platform_info = f"{distro.name()} {distro.version()}"
+            except: pass
+        elif platform.system() == "Windows":
+            platform_info = "Windows" + " ".join(list(platform.win32_ver()))
+        
+        chatbot_cog = self.bot.get_cog("ChatbotCog")
+        channel_id = interaction.channel_id
+        
+        chan_info = chatbot_cog.channel_data.get(channel_id, {"muted_until": 0}) if chatbot_cog else {}
+        is_muted = "Yes" if time.time() < chan_info.get("muted_until", 0) else "No"
+        
+        return {
+            "identity": {
+                "title": "Identity & Version",
+                "fields": {
+                    "uuid": {
+                        "display": "Session UUID",
+                        "value": f"{self.bot.session_uuid}"
+                    },
+                    "version": {"display": "Bot Version", "value": f"git+{self.bot.commit_hash or 'No commit hash found'} {self.bot.last_commit or 'No commit message found'}"},
+                    "signature": {"display": "Signature", "value": self.bot.name_signature or "Unknown signature"},
+                    "uptime": {
+                        "display": "Bot uptime",
+                        "value": f"{uptime}",
+                    },
+                    "latency": {
+                        "display": "Network latency",
+                        "value": f"{self.bot.latency * 1000:.2f}ms"
+                    },
+                    "owner": {
+                        "display": "Bot developer",
+                        "value": "\\_\\_\\_\\_\\_"
+                    }
+                }
+            },
+            "stats": {
+                "title": "Bot Statistics",
+                "fields": {
+                    "guilds": {
+                        "display": "Servers",
+                        "value": f"{len(self.bot.guilds):,}",
+                    },
+                    "users": {
+                        "display": "Users",
+                        "value": f"{len(self.bot.users):,}",
+                    },
+                    "msgs": {
+                        "display": "Messages seen",
+                        "value": f"{self.bot.handled_messages:,}",
+                    },
+                    "channels": {
+                        "display": "Channels",
+                        "value": f"{len(list(self.bot.get_all_channels())):,}",
+                    },
+                    "interactions": {"display": "Interactions", "value": f"P: {self.bot.processed_interactions} | F: {self.bot.failed_interactions}"},
+                    "cached_values": {
+                        "display": "Caches",
+                        "value": f"{self.bot.cache.get_count():,}"
+                    }
+                }
+            },
+            "hardware": {
+                "title": "Technical details",
+                "fields": {
+                    "platform": {"display": "Platform", "value": platform_info},
+                    "cpu": {
+                        "display": "CPU usage",
+                        "value": self.cog.make_bar(cpu_usage),
+                    },
+                    "ram": {
+                        "display": "Memory Usage",
+                        "value": self.cog.make_bar(mem.percent),
+                    },
+                    "disk": {"display": "Disk Usage", "value": self.cog.make_bar(disk.percent)},
+                    "ram_details": {"display": "Memory Details", "value": f"{mem.used // (1024**2)}MB / {mem.total // (1024**2)}MB"}
+                }
+            },
+            "context": {
+                "title": "Local brain data",
+                "fields": {
+                    "muted": {"display": "Is Jim muted?", "value": is_muted},
+                    "memory": {"display": "Context Usage", "value": f"{len(chatbot_cog.history.get(channel_id, []))}/10 messages"},
+                    "mode": {"display": "Current Mood", "value": "idk"},
+                }
+            }
+        }
+    
+    @discord.ui.select(
+        placeholder="Choose a category...",
+        options=[
+            SelectOption(label="Identity", value="identity", emoji="🛠️"),
+            SelectOption(label="Statistics", value="stats", emoji="📈"),
+            SelectOption(label="Technical details", value="hardware", emoji="🔧"),
+            SelectOption(label="AI Context details", value="context", emoji="🗣️")
+        ]
+    )
+    async def select_callback(self, interaction: Interaction, select: Select):
+        choice = select.values[0]
+        
+        full_data = await self.get_stats_data(interaction)
+        category = full_data.get(select.values[0], {})
+        
+        e = Embed(title=f"Bot information - {category.get('title', "Unknown")}")
+        
+        for field_id, info in category.get('fields', {}).items():
+            is_inline = info.get('inline', True)
+            e.add_field(name=info.get('display', '???'), value=info.get('value', '???'), inline=is_inline)
+        
+        await interaction.response.edit_message(embed=e, view=self)
+    
 class Info(commands.Cog):
     def __init__(self, bot):
         self.bot: PoxBot = bot
     
     group = app_commands.Group(name="info", description="Informations.")
-
-    @group.command(name="sync_commands", description="syncs command if panic mode")
+    
+    def make_bar(self, percent, length=10):
+        filled_length = int(length*percent/100)
+        bar = '#' * filled_length + '_' * (length - filled_length)
+        return f"[`{bar}`] {percent}%"
+    
+    @group.command(name="sync", description="syncs command if panic mode")
     @app_commands.check(stuff.is_bot_owner)
     @commands.guild_only()
     async def sync_commands(self,ctx: Interaction):
@@ -28,18 +171,34 @@ class Info(commands.Cog):
         else:
             await ctx.response.send_message("This command can only be used in a server.")
     
-    @group.command(name="uptime", description="How long this bot is in f**king session")
+    @group.command(name="uptime", description="How long this bot is in session")
     async def check_uptime(self,ctx: Interaction):
         global start_time
         await ctx.response.send_message("I have been online for {}.".format(stuff.get_formatted_from_seconds(round(time.time() - self.bot.launch_time2))))
     
-    @group.command(name="botinfo", description="I always with you :)")
+    @group.command(name="info", description="I always with you :)")
+    async def show_stats(self, interaction: Interaction):
+        await interaction.response.defer(thinking=True)
+        
+        view = DynamicInfoView(self, self.bot)
+        e = Embed(title="Bot Information", description="Select a category below to view specific details.")
+        e.set_footer(text="System: " + platform.system())
+        
+        await interaction.followup.send(embed=e, view=view)
+    
     async def script_info(self, interaction: Interaction):
         await interaction.response.defer(thinking=True)
+        
         e = Embed(title="Bot Information")
+        
+        cpu_usage = await asyncio.to_thread(psutil.cpu_percent, interval=0.1)
+        mem = await asyncio.to_thread(psutil.virtual_memory)
+        disk = await asyncio.to_thread(psutil.disk_usage, '/')
+        
         commit_hash = self.bot.commit_hash or "Unknown hash"
         last_commit_message = self.bot.last_commit or "No description"
         namesignature = self.bot.name_signature or "Unknown"
+        
         rows_to_add = {
             'Session UUID': str(self.bot.session_uuid),
             'Version': f"Python {platform.python_version()}, discord.py {discord.__version__}",
@@ -55,13 +214,20 @@ class Info(commands.Cog):
             'Channels I can read': f"{len(list(self.bot.get_all_channels())):,} channels",
             'Messages I can validate': f"{len(self.bot.cached_messages):,} messages",
             'Data I can retrieve': f"{self.bot.cache.get_count():,} values",
+            'CPU Usage': self.make_bar(cpu_usage),
+            'Memory Usage': self.make_bar(mem.percent),
+            'Disk Usage': self.make_bar(disk.percent),
+            'Memory Details': f"{mem.used // (1024**2)}MB / {mem.total // (1024**2)}MB"
         }
         
         if platform.system() == "Linux":
-            os_rel = platform.freedesktop_os_release()
-            if os_rel and os_rel.get("ID") == "ubuntu":
-                rows_to_add['Platform'] = f"{distro.name()} {distro.version()}"
-            else:
+            try:
+                os_rel = platform.freedesktop_os_release()
+                if os_rel and os_rel.get("ID") == "ubuntu":
+                    rows_to_add['Platform'] = f"{distro.name()} {distro.version()}"
+                else:
+                    rows_to_add['Platform'] = platform.platform(aliased=True)
+            except Exception:
                 rows_to_add['Platform'] = platform.platform(aliased=True)
         elif platform.system() == "Windows":
             rows_to_add['Platform'] = "Windows " + " ".join(list(platform.win32_ver()))
@@ -70,9 +236,7 @@ class Info(commands.Cog):
         
         if self.bot.launch_time2:
             rows_to_add['Launch time'] = get_formatted_from_seconds(round(time.time() - self.bot.launch_time2))
-
-        lines = []
-
+        
         for k,v in rows_to_add.items():
             e.add_field(name=k,value=v)
 
@@ -142,6 +306,39 @@ class Info(commands.Cog):
             await ctx.followup.send(f"In timezone {timezone}, it's **{datetime.strftime(timec, '%Y.%m.%d, %H:%M:%S with the UTC offset %z')}**.", ephemeral=True)
         except Exception as e:
             await ctx.followup.send(f"An error occurred: {str(e)}", ephemeral=True)
+    
+    @group.command(name="invite", description="Invites the bot to server by application url. (LIMITED TO 90 SERVERS)")
+    async def invite(self, interaction: Interaction):
+        try:
+            await interaction.response.defer()
+            
+            guild_count = len(self.bot.guilds)
+            limit = self.bot.bot_servers_limit
+            
+            status_msg = f"Capacity: **{guild_count}/{limit}** servers"
+            
+            scopes = "bot%20applications.commands"
+            perms = 1395868252224
+            
+            if not self.bot.user: return
+            client_id = self.bot.user.id
+            invite_url = f"https://discord.com/oauth2/authorize?client_id={client_id}&permissions={perms}&scope={scopes}"
+            
+            embed = Embed(
+                title="Invite Jim",
+                description=f"{status_msg}\n\nYou can add me to your server using [this link.]({invite_url})",
+                color=Color.red() if guild_count >= limit else Color.blurple()
+            )
+            
+            if guild_count >= limit:
+                embed.description = "You can't invite jim right now since count hit the limit."
+            
+            embed.set_footer(text="Note: Requires advanced permissions for full functionality, and the invitation is limited to 90 servers due to discord limitation.")
+            
+            await interaction.followup.send(embed=embed)
+        except Exception as e:
+            logger.exception(f"Failed to get info: {e}")
+            await interaction.followup.send("Error.")
 
     @group.command(name="name_signature", description="Shows temporary signature for the bot.")
     async def namesignature(self, interaction: discord.Interaction):

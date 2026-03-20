@@ -82,7 +82,9 @@ class PoxBot(commands.AutoShardedBot):
         self.EXCLUDE_EXTENSIONS = [
             "chat",
             "log",
+            "others"
         ]
+        self.bot_servers_limit = 90
     
     async def setup_hook(self):
         stuff.setup_database("./leaderboard.db")
@@ -305,6 +307,7 @@ class PoxBot(commands.AutoShardedBot):
                             await message.reply(file=pic)
                             self.already_said = True
                         else:
+                            """
                             is_found = False
                             for pattern, response_data in data.responses.items():
                                 result = re.search(pattern, prompt)
@@ -352,13 +355,14 @@ class PoxBot(commands.AutoShardedBot):
                                                 await asyncio.sleep(random.uniform(1.0,2.5))
                                     break
                             #await message.reply(prompt)
+                            """
         else:
             logger.error("Couldn't find 'bot.user'")
         
         pox_count = 0
         separated_words = message.content.lower().split(" ")
 
-        logger.debug(f"[{message.author.id}.{message.guild.id if message.guild else '0'}.{message.channel.id if message.channel else '0'}] {len(separated_words)} words (@{message.author.name})")
+        #logger.debug(f"[{message.author.id}.{message.guild.id if message.guild else '0'}.{message.channel.id if message.channel else '0'}] {len(separated_words)} words (@{message.author.name})")
 
         if self.db_connection and self.user:
             if not message.author.bot or not message.author.system:

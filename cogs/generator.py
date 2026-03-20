@@ -9,7 +9,7 @@ from aiocache import cached
 import aiofiles
 from discord.ext.commands import Cog
 from discord import Message, app_commands, Embed, Interaction, File
-from discord.app_commands import locale_str
+from discord.app_commands import AppInstallationType, locale_str, AppCommandContext
 import markovify
 from io import BytesIO
 from datetime import datetime
@@ -61,7 +61,7 @@ class Generators(Cog):
         self.bot.tree.add_command(
             app_commands.ContextMenu(
                 name='Generate fade video',
-                callback=self.generate_funny_fade_video,
+                callback=self.generate_funny_fade_video
             )
         )
     group = app_commands.Group(name="generate", description="Generators.")

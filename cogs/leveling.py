@@ -61,7 +61,7 @@ class XPSystem(commands.Cog):
         try:
             async with aiofiles.open(self.path, mode='w+') as f:
                 await f.write(json.dumps(data_to_save, indent=4))
-            logger.info("XP Data saved successfully")
+            #logger.info("XP Data saved successfully")
         except Exception as e:
             logger.exception(f"Error saving XP data asynchronously: {e}")
 

@@ -19,7 +19,7 @@ Run this command:
 
 ## Disclaimer
 
-I do not own the images & contents which is in `data` directory.
+I do not own the images & contents which is in `resources` directory.
 
 ## Contribute
 
