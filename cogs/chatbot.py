@@ -134,6 +134,14 @@ class ChatbotCog(commands.Cog):
         except Exception as e:
             logger.error(f"Summarization failed: {e}")
     
+    def clean_for_llm(self, content):
+        for mention in re.findall(r"<@!?(\0-9]+)>", content):
+            user = self.bot.get_user(int(mention))
+            name = user.display_name if user else "someone"
+            content = content.replace(f"<@{mention}>", f"<{name}>")
+        
+        return content
+    
     @commands.Cog.listener()
     async def on_message(self, message: Message):
         if not self.bot.user: return
@@ -141,7 +149,7 @@ class ChatbotCog(commands.Cog):
         
         channel_id = message.channel.id
         user_indentity = message.author.display_name
-        content = message.content
+        content = self.clean_for_llm(message.content)
         now = time.time()
         
         channel_info = self.channel_data[channel_id]
@@ -211,13 +219,7 @@ class ChatbotCog(commands.Cog):
 #                    except: pass
                 
                 async with message.channel.typing():
-                    prompt_lines = ["Generate response from this conversation:"]
-                    
-                    for entry in self.history[channel_id]:
-                        if entry.startswith("assistant:"):
-                            prompt_lines.append(entry.replace("assistant:", "<assistant>:", 1))
-                        else:
-                            prompt_lines.append(entry)
+                    prompt_lines = self.history[channel_id]
                     
                     context = "\n".join(prompt_lines)
                     
@@ -236,7 +238,7 @@ class ChatbotCog(commands.Cog):
                     options = {
                         'num_predict': 80,
                         'temperature': 0.85,
-                        'stop': [f'user:', '<You>:', '<assistant>:', '[/REP]', '\n', '<|eot_id|>']
+                        'stop': ["[/REP]", "user:", "\n"]
                     }
                     
                     async for chunk in await self.client.generate(model=self.model_name, prompt=context, keep_alive=-1, stream=True, options=options):
@@ -269,6 +271,7 @@ class ChatbotCog(commands.Cog):
                     if len(self.perf_logs) > self.max_logs: self.perf_logs.pop(0)
                     
                     final_text = full.strip()
+                    logger.debug(f"LLM's Response: {full}")
                     
                     match = re.search(r"\[REP\](.*?)\[/REP\]", final_text, re.DOTALL)
                     if match:
@@ -285,7 +288,7 @@ class ChatbotCog(commands.Cog):
                         #if total_duration > 10.0:
                         #    lag_msg = "my head hurtssss... too much thinking..."
                         #    final_text = f"*{lag_msg}*\n{final_text}"
-                        if "[REP]" in full:
+                        if "[/REP]" in full:
                             await message.reply(final_text)
                         else:
                             await message.channel.send(final_text)

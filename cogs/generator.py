@@ -51,6 +51,7 @@ class DiscordProgress(TqdmProgressBarLogger):
                 self.interaction.client.loop.create_task(
                     self.interaction.edit_original_response(content=f"Rendering... {current_pct}")
                 )
+
 if not hasattr(PIL.Image, 'ANTIALIAS'):
     PIL.Image.ANTIALIAS = PIL.Image.Resampling.LANCZOS # type: ignore
 

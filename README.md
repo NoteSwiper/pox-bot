@@ -1,18 +1,20 @@
 # pox-bot
 
-just an my bot's source code lolol
+source for my bot called stupid bot
 
-## Requirements
+## Requirements to run
 
-`uv sync`
+- `Python 3.12`
+- `uv`.
+- [`dependencies.`](pyproject.toml)
 
 ## Usage
 
 Make sure to activate virtualenv first.
 
-Run this command:
+Run this command: `uv run main.py`
 
-`uv run main.py`
+If you want to update the packages (dependencies, not my bot): `uv sync --upgrade`
 
 > [!warning]
 > I'm not responsive for messing the project up.

@@ -1,11 +1,75 @@
 from aiocache import cached
-from discord import Color, Embed, Interaction, NSFWLevel, app_commands
+from discord import AuditLogAction, ButtonStyle, Color, Embed, Guild, Interaction, NSFWLevel, SelectOption, app_commands, ui
 from discord.app_commands import locale_str
 from discord.ext import commands
 from enum import IntFlag, auto
 
 from bot import PoxBot
 from logger import logger
+
+class LoggingView(ui.View):
+    def __init__(self, data_dict, user):
+        super().__init__(timeout=60)
+        self.data_dict = data_dict
+        self.user = user
+        self.categories = list(data_dict.keys())
+        self.current_category = self.categories
+        self.current_page = 0
+        self.items_per_page = 10
+    
+    def create_embed(self):
+        category_data = self.data_dict[self.current_category]
+        total_pages = max(1, (len(category_data) - 1) // self.items_per_page + 1)
+        
+        embed = Embed(title=f"Guild history: {self.current_category}")
+        
+        start = self.current_page * self.items_per_page
+        end = start + self.items_per_page
+        page_items = category_data[start:end]
+        
+        if not page_items:
+            embed.description = "No history found for this category."
+        else:
+            description = ""
+            for i, entry in enumerate(page_items, start + 1):
+                description += f"**{i}.** {entry}\n"
+            embed.description = description
+        
+        embed.set_footer(text=f"Page {self.current_page + 1}/{total_pages} | {self.current_category}")
+        return embed
+    
+    @ui.button(label="Prev", style=ButtonStyle.gray)
+    async def previous_page(self, interaction: Interaction, button: ui.Button):
+        if self.current_page > 0:
+            self.current_page -= 1
+            await interaction.response.edit_message(embed=self.create_embed(), view=self)
+        else:
+            await interaction.response.send_message("You're on the first page.", ephemeral=True)
+    
+    @ui.button(label="Next", style=ButtonStyle.gray)
+    async def next_page(self, interaction: Interaction, button: ui.Button):
+        total_pages = (len(self.data_dict[self.current_category]) - 1) // self.items_per_page + 1
+        if self.current_page < total_pages - 1:
+            self.current_page += 1
+            await interaction.response.edit_message(embed=self.create_embed(), view=self)
+        else:
+            await interaction.response.send_message("You're on the last page 3:", ephemeral=True)
+    
+    @ui.select(placeholder="Select history type" options=[
+        SelectOption(label="Kicks", value="kicks", emoji="👟"),
+        SelectOption(label="Bans", value="bans", emoji="🔨"),
+        SelectOption(label="Timeouts", value="timeouts", emoji="🚫")
+    ])
+    async def select_category(self, interaction: Interaction, select: ui.Select):
+        self.current_category = select.values
+        self.current_page = 0
+        await interaction.response.edit_message(embed=self.create_embed(), view=self)
+    
+    async def interaction_check(self, interaction: Interaction) -> bool:
+        if interaction.user != self.user:
+            await interaction.response.send_message("Your not executor of this menu idiot.", ephemeral=True)
+            return False
+        return True
 
 class GuildGroup(commands.Cog):
     def __init__(self, bot):
@@ -170,6 +234,38 @@ class GuildGroup(commands.Cog):
         )
 
         return await interaction.followup.send(embed=embed)
+    
+    @cached(60)
+    async def fetch_guild_history(self, guild: Guild):
+        history = {
+            "kicks": [], "bans": [], "timeouts": []
+        }
+        
+        async for entry in guild.audit_logs(limit=128):
+            target = entry.target
+            user = entry.user
+            reason = entry.reason or "No reason provided"
+            
+            if entry.action == AuditLogAction.kick:
+                history['kicks'].append(f"**Target:** {target} | **Mod:** {user}\n- *Reason: {reason}*")
+            elif entry.action == AuditLogAction.ban:
+                history['bans'].append(f"**Target:** {target} | **Mod:** {user}\n- *Reason: {reason}*")
+            elif entry.action == AuditLogAction.member_update:
+                if hasattr(entry.after, 'communication_disabled_until'):
+                    if entry.after.communication_disabled_until:
+                        until = entry.after.communication_disabled_until.strftime("%Y-%m-%d %H:%M")
+                        history["Timeouts"].append(f"**Target:** {target} | **Until:** {until}\n- *Reason: {reason}*")
+        
+        return history
+    
+    @checker_group.command(name="logs", description="Shows a menu to get history of kicks, bans and timeouts.")
+    @app_commands.checks.has_permissions(view_audit_log=True)
+    async def show_history(self, interaction: Interaction):
+        if not interaction.guild: return await interaction.response.send_message("Must be in guild.")
+        history_data = await self.fetch_guild_history(interaction.guild)
+        
+        view = LoggingView(history_data, interaction.user)
+        await interaction.response.send_message(embed=view.create_embed(), view=view)
 
 async def setup(bot):
     await bot.add_cog(GuildGroup(bot))

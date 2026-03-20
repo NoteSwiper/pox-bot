@@ -1,5 +1,6 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:venv",
     "python-envs.pythonProjects": [],
-    "todo-tree.tree.scanMode": "workspace"
+    "todo-tree.tree.scanMode": "workspace",
+    "python.REPL.enableREPLSmartSend": false
 }
