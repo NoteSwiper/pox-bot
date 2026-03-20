@@ -55,7 +55,7 @@ class LoggingView(ui.View):
         else:
             await interaction.response.send_message("You're on the last page 3:", ephemeral=True)
     
-    @ui.select(placeholder="Select history type" options=[
+    @ui.select(placeholder="Select history type", options=[
         SelectOption(label="Kicks", value="kicks", emoji="👟"),
         SelectOption(label="Bans", value="bans", emoji="🔨"),
         SelectOption(label="Timeouts", value="timeouts", emoji="🚫")
