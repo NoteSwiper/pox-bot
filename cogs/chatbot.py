@@ -175,7 +175,7 @@ class ChatbotCog(commands.Cog):
             return
         
         content_lower = message.content.lower()
-        is_mentioned = self.bot.user.mentioned_in(message)
+        is_mentioned = self.bot.user in message.mentions and not message.mention_everyone
         
         if self.trigger_list['shut_up'].search(content_lower) and is_mentioned:
             self.channel_data[channel_id].update({"muted_until": now + (60 * 10)})

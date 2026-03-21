@@ -1,3 +1,7 @@
+import asyncio
+import sys
+import subprocess
+
 import stuff
 stuff.create_dir_if_not_exists("./logs")
 
@@ -12,7 +16,6 @@ from bot import PoxBot
 from logger import logger
 
 import psutil
-
 process_ps = psutil.Process(os.getpid())
 process_ps.nice(psutil.ABOVE_NORMAL_PRIORITY_CLASS)
 
@@ -159,15 +162,21 @@ async def on_app_command_error(interaction: Interaction, error: app_commands.App
         logger.exception(f"An unexpected error occurred: {error}")
         return
 
+def start_monitor():
+    return subprocess.Popen([sys.executable, "src/performance_gui.py"])
+
 if __name__ == "__main__":
     if not bot_token:
-        print("You should to put the bot token to 'TOKEN' in .env!")
+        logger.critical("You should to put the bot token to 'TOKEN' in .env!")
         exit()
     else:
+        monitor_proc = start_monitor()
+        
         try:
             bot.run(bot_token, log_handler=None)
         except KeyboardInterrupt:
-            print("Shutting down...")
+            logger.info("Shutting down...")
             pass
         finally:
-            print("Bot has been stopped")
+            monitor_proc.terminate
+            logger.info("Bot has been stopped")
