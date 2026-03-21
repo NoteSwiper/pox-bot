@@ -8,18 +8,27 @@ from bot import PoxBot
 from logger import logger
 
 class LoggingView(ui.View):
-    def __init__(self, data_dict, user):
+    def __init__(self, data_dict, user, default):
         super().__init__(timeout=60)
         self.data_dict = data_dict
         self.user = user
         self.categories = list(data_dict.keys())
-        self.current_category = self.categories
+        
+        if isinstance(default, str):
+            self.current_category = default
+        else:
+            self.current_category = self.categories[default]
+        
         self.current_page = 0
         self.items_per_page = 10
     
+    def get_total_pages(self):
+        data_len = len(self.data_dict[self.current_category])
+        return max(1, (data_len - 1) // self.items_per_page + 1)
+    
     def create_embed(self):
         category_data = self.data_dict[self.current_category]
-        total_pages = max(1, (len(category_data) - 1) // self.items_per_page + 1)
+        total_pages = self.get_total_pages()
         
         embed = Embed(title=f"Guild history: {self.current_category}")
         
@@ -48,7 +57,7 @@ class LoggingView(ui.View):
     
     @ui.button(label="Next", style=ButtonStyle.gray)
     async def next_page(self, interaction: Interaction, button: ui.Button):
-        total_pages = (len(self.data_dict[self.current_category]) - 1) // self.items_per_page + 1
+        total_pages = self.get_total_pages()
         if self.current_page < total_pages - 1:
             self.current_page += 1
             await interaction.response.edit_message(embed=self.create_embed(), view=self)
@@ -61,7 +70,7 @@ class LoggingView(ui.View):
         SelectOption(label="Timeouts", value="timeouts", emoji="🚫")
     ])
     async def select_category(self, interaction: Interaction, select: ui.Select):
-        self.current_category = select.values
+        self.current_category = select.values[0]
         self.current_page = 0
         await interaction.response.edit_message(embed=self.create_embed(), view=self)
     
@@ -106,7 +115,6 @@ class GuildGroup(commands.Cog):
             e.set_footer(text=f"Guild ID: {guild.id}")
             e.set_author(name=f"By {guild.owner.name if guild.owner else 'Unknown'}", icon_url=guild.owner.avatar.url if guild.owner and guild.owner.avatar else None)
 
-            lines = []
             for key,value in temp1.items():
                 e.add_field(name=key, value=value, inline=True)
 
@@ -154,7 +162,7 @@ class GuildGroup(commands.Cog):
     
     @cached(60)
     @checker_group.command(name="members_list", description="Retrieves memebers in this guild.")
-    @app_commands.guild_install()
+    @app_commands.guild_only()
     async def get_members(self, interaction: Interaction, include_bot: bool = False, include_member: bool = True):
         await interaction.response.defer()
 
@@ -254,7 +262,7 @@ class GuildGroup(commands.Cog):
                 if hasattr(entry.after, 'communication_disabled_until'):
                     if entry.after.communication_disabled_until:
                         until = entry.after.communication_disabled_until.strftime("%Y-%m-%d %H:%M")
-                        history["Timeouts"].append(f"**Target:** {target} | **Until:** {until}\n- *Reason: {reason}*")
+                        history["timeouts"].append(f"**Target:** {target} | **Until:** {until}\n- *Reason: {reason}*")
         
         return history
     
@@ -264,7 +272,7 @@ class GuildGroup(commands.Cog):
         if not interaction.guild: return await interaction.response.send_message("Must be in guild.")
         history_data = await self.fetch_guild_history(interaction.guild)
         
-        view = LoggingView(history_data, interaction.user)
+        view = LoggingView(history_data, interaction.user, 'kicks')
         await interaction.response.send_message(embed=view.create_embed(), view=view)
 
 async def setup(bot):
